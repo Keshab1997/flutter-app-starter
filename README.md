@@ -15,16 +15,17 @@
    - **Brand Color:** `indigo` / `teal` / `emerald` / `amber` / `rose` / `violet` / `slate`
    - **App Preset (`app_preset`):**
      - `standard` *(default — 8 zero-plugin core kits pre-wired)*
-     - `finance_vault` *(+ `lock`, `pdf`, `upi`, `charts`, `csv_wa`, `notify`)*
-     - `scanner_ai` *(+ `ai`, `ai_chat`, `ocr`, `image_prep`, `pdf`)*
-     - `quiz_learning` *(+ `quiz`, `streaks`, `voice`, `charts`, `notify`, `ads`)*
-     - `ai_assistant` *(+ `ai`, `ai_chat`, `voice`, `ads`, `paywall`)*
+     - `universal_ux` *(+ `state_views`, `form_inputs`, `search_filter`, `permissions`, `help_faq`)*
+     - `finance_vault` *(+ `lock`, `pdf`, `upi`, `charts`, `csv_wa`, `notify`, `state_views`, `form_inputs`, `search_filter`, `help_faq`)*
+     - `scanner_ai` *(+ `ai`, `ai_chat`, `ocr`, `image_prep`, `pdf`, `permissions`, `state_views`, `search_filter`, `help_faq`)*
+     - `quiz_learning` *(+ `quiz`, `streaks`, `voice`, `charts`, `notify`, `ads`, `state_views`, `search_filter`, `help_faq`)*
+     - `ai_assistant` *(+ `ai`, `ai_chat`, `voice`, `ads`, `paywall`, `permissions`, `state_views`, `help_faq`)*
      - `arcade_game` *(+ `game_hud`, `streaks`, `ads`, `paywall`)*
-     - `cloud_supabase` *(+ `cloud_sync`, `supabase`, `lock`, `notify`)*
-     - `cloud_firebase` *(+ `cloud_sync`, `firebase`, `lock`, `notify`)*
-     - `monetized_pro` *(+ `ads`, `paywall`, `notify`)*
-     - `all_kits` *(adds all 27 kits in 1 click!)*
-   - **Extra Kits (`extra_kits`):** comma-separated mix-and-match: `ads,notify,ocr,ai,ai_chat,lock,pdf,upi,charts,quiz,image_prep,csv_wa,cloud_sync,supabase,firebase,game_hud,streaks,paywall,voice` (or `all`)
+     - `cloud_supabase` *(+ `cloud_sync`, `supabase`, `lock`, `notify`, `state_views`)*
+     - `cloud_firebase` *(+ `cloud_sync`, `firebase`, `lock`, `notify`, `state_views`)*
+     - `monetized_pro` *(+ `ads`, `paywall`, `notify`, `help_faq`)*
+     - `all_kits` *(adds all 32 kits in 1 click!)*
+   - **Extra Kits (`extra_kits`):** comma-separated mix-and-match: `state_views,form_inputs,search_filter,permissions,help_faq,ads,notify,ocr,ai,ai_chat,lock,pdf,upi,charts,quiz,image_prep,csv_wa,cloud_sync,supabase,firebase,game_hud,streaks,paywall,voice` (or `all`)
 
 **Or run locally (CLI):**
 ```bash
@@ -79,6 +80,11 @@ python3 tool/setup_new_app.py \
 | `streaks` | `--with-streaks` | [`smart_streaks_gamify_kit`](https://github.com/Keshab1997/smart_streaks_gamify_kit) | Adds daily streaks, freeze shields, XP leveling & 7-day strip |
 | `paywall` | `--with-paywall` | [`smart_paywall_pro_kit`](https://github.com/Keshab1997/smart_paywall_pro_kit) | Adds Pro paywall, 24h rewarded pass, SHA-256 promo codes + `BILLING` permission |
 | `voice` | `--with-voice` | [`smart_voice_speech_kit`](https://github.com/Keshab1997/smart_voice_speech_kit) | Adds EN/বাংলা TTS & STT controller with danda chunking & learner speed presets |
+| `state_views` | `--with-state-views` | [`smart_state_views_kit`](https://github.com/Keshab1997/smart_state_views_kit) | Adds `pumpAndSettle`-safe shimmer skeleton loader, empty state, offline retry & `SmartAsyncStateView` |
+| `form_inputs` | `--with-form-inputs` | [`smart_form_inputs_kit`](https://github.com/Keshab1997/smart_form_inputs_kit) | Adds Bangla-digit-safe (`০-৯` & `0-9`) number/currency formatters, India/BD phone & UPI validators & quick-chip inputs |
+| `search_filter` | `--with-search-filter` | [`smart_search_filter_kit`](https://github.com/Keshab1997/smart_search_filter_kit) | Adds Bangla-safe debounced fuzzy search, persistent recent searches, date-range chips & sort bottom sheet |
+| `permissions` | `--with-permissions` | [`smart_permission_kit`](https://github.com/Keshab1997/smart_permission_kit) | Adds Play Store Prominent Disclosure rationale sheet, App Settings recovery flow & pluggable permission gateway |
+| `help_faq` | `--with-help-faq` | [`smart_help_faq_kit`](https://github.com/Keshab1997/smart_help_faq_kit) | Adds searchable offline EN/বাংলা FAQ center, dismissible quick-tip banners & 1-tap WhatsApp/email support card |
 
 ---
 

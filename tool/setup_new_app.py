@@ -142,6 +142,26 @@ OPTIONAL_KITS: dict[str, tuple[str, str]] = {
         "smart_voice_speech_kit",
         "EN/বাংলা TTS & STT controller with danda chunking & speed presets",
     ),
+    "state_views": (
+        "smart_state_views_kit",
+        "Skeleton shimmer loader, empty states, offline/server error retry & SmartAsyncStateView",
+    ),
+    "form_inputs": (
+        "smart_form_inputs_kit",
+        "Bangla-digit-safe (০-৯ & 0-9) currency/number formatters, India/BD phone & UPI validators",
+    ),
+    "search_filter": (
+        "smart_search_filter_kit",
+        "Bangla-safe debounced fuzzy search, persistent recent searches, date-range chips & sort sheet",
+    ),
+    "permissions": (
+        "smart_permission_kit",
+        "Play Store permission rationale sheet, permanent-denial App Settings recovery & gateway",
+    ),
+    "help_faq": (
+        "smart_help_faq_kit",
+        "Searchable offline EN/বাংলা FAQ center, dismissible quick-tip banners & 1-tap support card",
+    ),
 }
 
 KIT_ALIASES: dict[str, str] = {
@@ -185,18 +205,76 @@ KIT_ALIASES: dict[str, str] = {
     "smart_voice_speech_kit": "voice",
     "tts": "voice",
     "speech": "voice",
+    "smart_state_views_kit": "state_views",
+    "skeleton": "state_views",
+    "smart_form_inputs_kit": "form_inputs",
+    "forms": "form_inputs",
+    "smart_search_filter_kit": "search_filter",
+    "search": "search_filter",
+    "smart_permission_kit": "permissions",
+    "permission": "permissions",
+    "smart_help_faq_kit": "help_faq",
+    "faq": "help_faq",
+    "help": "help_faq",
 }
 
 APP_PRESETS: dict[str, list[str]] = {
     "standard": [],
-    "finance_vault": ["lock", "pdf", "upi", "charts", "csv_wa", "notify"],
-    "scanner_ai": ["ai", "ai_chat", "ocr", "image_prep", "pdf"],
-    "quiz_learning": ["quiz", "streaks", "voice", "charts", "notify", "ads"],
-    "ai_assistant": ["ai", "ai_chat", "voice", "ads", "paywall"],
+    "universal_ux": [
+        "state_views",
+        "form_inputs",
+        "search_filter",
+        "permissions",
+        "help_faq",
+    ],
+    "finance_vault": [
+        "lock",
+        "pdf",
+        "upi",
+        "charts",
+        "csv_wa",
+        "notify",
+        "state_views",
+        "form_inputs",
+        "search_filter",
+        "help_faq",
+    ],
+    "scanner_ai": [
+        "ai",
+        "ai_chat",
+        "ocr",
+        "image_prep",
+        "pdf",
+        "permissions",
+        "state_views",
+        "search_filter",
+        "help_faq",
+    ],
+    "quiz_learning": [
+        "quiz",
+        "streaks",
+        "voice",
+        "charts",
+        "notify",
+        "ads",
+        "state_views",
+        "search_filter",
+        "help_faq",
+    ],
+    "ai_assistant": [
+        "ai",
+        "ai_chat",
+        "voice",
+        "ads",
+        "paywall",
+        "permissions",
+        "state_views",
+        "help_faq",
+    ],
     "arcade_game": ["game_hud", "streaks", "ads", "paywall"],
-    "cloud_supabase": ["cloud_sync", "supabase", "lock", "notify"],
-    "cloud_firebase": ["cloud_sync", "firebase", "lock", "notify"],
-    "monetized_pro": ["ads", "paywall", "notify"],
+    "cloud_supabase": ["cloud_sync", "supabase", "lock", "notify", "state_views"],
+    "cloud_firebase": ["cloud_sync", "firebase", "lock", "notify", "state_views"],
+    "monetized_pro": ["ads", "paywall", "notify", "help_faq"],
     "all_kits": sorted(OPTIONAL_KITS.keys()),
 }
 
@@ -582,6 +660,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--with-streaks", action="store_true", help="Add smart_streaks_gamify_kit")
     ap.add_argument("--with-paywall", action="store_true", help="Add smart_paywall_pro_kit")
     ap.add_argument("--with-voice", action="store_true", help="Add smart_voice_speech_kit")
+    ap.add_argument("--with-state-views", action="store_true", help="Add smart_state_views_kit")
+    ap.add_argument("--with-form-inputs", action="store_true", help="Add smart_form_inputs_kit")
+    ap.add_argument("--with-search-filter", action="store_true", help="Add smart_search_filter_kit")
+    ap.add_argument("--with-permissions", action="store_true", help="Add smart_permission_kit")
+    ap.add_argument("--with-help-faq", action="store_true", help="Add smart_help_faq_kit")
     ap.add_argument("--with-all-kits", action="store_true", help="Add all optional Flutter kits")
     ap.add_argument("--cleanup", action="store_true", help="Remove setup script & workflow after running")
     ap.add_argument(
@@ -634,6 +717,11 @@ def main(argv: list[str] | None = None) -> int:
         "streaks": args.with_streaks,
         "paywall": args.with_paywall,
         "voice": args.with_voice,
+        "state_views": args.with_state_views,
+        "form_inputs": args.with_form_inputs,
+        "search_filter": args.with_search_filter,
+        "permissions": args.with_permissions,
+        "help_faq": args.with_help_faq,
     }
     for slug, active in flag_map.items():
         if active:
