@@ -39,6 +39,7 @@ python3 tool/setup_new_app.py \
 - **Flutter `3.50.1`** (`.fvmrc`) + matched **AGP `9.3.1` / Gradle `9.5.0` / Kotlin `2.4.20`** (`check_toolchain` green on Day 1) + `java-version: "21"`.
 - **Auto Android Release Signing** (`android/app/build.gradle.kts`) — automatically uses `android/key.properties` when provided locally or by `flutter-builder` CI, with safe debug fallback locally.
 - **[`app_pulse_kit`](https://github.com/Keshab1997/app_pulse_kit) + `pulse.json`** — remote soft/force updates, maintenance screen, scheduled notices, feature flags, and hidden 5-tap **`PulseDebugSheet`** in Settings.
+- **[`smart_review_feedback`](https://github.com/Keshab1997/smart_review_feedback)** — pre-wired in `SettingsScreen` (*Rate & Feedback*) with 4–5★ Store Review routing & 1–3★ feedback sheet (EN + বাংলা).
 - **Persistent Theme (System / Light / Dark) & EN / বাংলা** via `SharedPreferences` + ready-made **`SettingsScreen`** + **`PRIVACY_POLICY.md`**.
 - **Global Error Guard** (`AppErrorView`) — clean fallback instead of red/grey screen on unexpected widget errors.
 - **[`flutter-builder`](https://github.com/Keshab1997/flutter-builder) workflows (`@v1.18.9`)** + **Agent Pack** + pre-wired local screenshots (`home` & `settings`).

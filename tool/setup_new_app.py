@@ -280,6 +280,11 @@ def main(argv: list[str] | None = None) -> int:
         help=f"Brand seed color preset ({', '.join(sorted(COLOR_PRESETS))}) or #RRGGBB",
     )
     ap.add_argument(
+        "--email",
+        default="support@example.com",
+        help="Support / feedback email for smart_review_feedback",
+    )
+    ap.add_argument(
         "--with-ai-pack",
         action="store_true",
         help="Also add Keshab1997/admin_api_key_manager to pubspec.yaml",
@@ -365,6 +370,7 @@ def main(argv: list[str] | None = None) -> int:
     app_config = root / "lib" / "app_config.dart"
     if app_config.is_file():
         escaped_name = app_name.replace("\\", "\\\\").replace("'", "\\'")
+        escaped_email = args.email.strip().replace("\\", "\\\\").replace("'", "\\'")
         app_config.write_text(
             f"""import 'package:flutter/material.dart';
 
@@ -379,6 +385,7 @@ class AppConfig {{
       '{pulse_url}';
   static const String privacyPolicyUrl =
       '{privacy_url}';
+  static const String supportEmail = '{escaped_email}';
   static const bool defaultBangla = {'true' if args.lang == 'bn' else 'false'};
 }}
 """,

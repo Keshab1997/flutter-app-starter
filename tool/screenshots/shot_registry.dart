@@ -4,6 +4,7 @@ import 'package:flutter_app_starter/screens/home_screen.dart';
 import 'package:flutter_app_starter/screens/settings_screen.dart';
 import 'package:flutter_app_starter/services/app_preferences.dart';
 import 'package:flutter_app_starter/theme/app_theme.dart';
+import 'package:smart_review_feedback/smart_review_feedback.dart';
 
 import 'shot_framework.dart';
 
@@ -16,6 +17,15 @@ final AppPulseController _shotPulse = AppPulseController(
   storage: InMemoryPulseStorage(),
   appVersion: '1.0.0',
   buildNumber: 1,
+);
+
+final SmartReviewController _shotReview = SmartReviewController(
+  feedbackSink: MemoryFeedbackSink(),
+  storage: InMemoryReviewStorage(),
+  storeAdapter: FakeStoreReviewAdapter(),
+  appName: 'Flutter App Starter',
+  appVersion: '1.0.0',
+  buildNumber: '1',
 );
 
 final AppPreferences _shotPrefs = AppPreferences.inMemory(
@@ -31,6 +41,7 @@ final ShotEnv env = ShotEnv(
   ),
   setUpAll: () async {
     await _shotPulse.init();
+    await _shotReview.init();
   },
 );
 
@@ -40,6 +51,7 @@ final List<Shot> shots = <Shot>[
     build: () => HomeScreen(
       pulseController: _shotPulse,
       preferences: _shotPrefs,
+      reviewController: _shotReview,
     ),
   ),
   Shot(
@@ -47,6 +59,7 @@ final List<Shot> shots = <Shot>[
     build: () => SettingsScreen(
       pulseController: _shotPulse,
       preferences: _shotPrefs,
+      reviewController: _shotReview,
     ),
   ),
 ];

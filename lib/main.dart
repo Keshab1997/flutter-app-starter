@@ -1,5 +1,6 @@
 import 'package:app_pulse_kit/app_pulse_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_review_feedback/smart_review_feedback.dart';
 
 import 'app_config.dart';
 import 'screens/home_screen.dart';
@@ -19,12 +20,18 @@ Future<void> main() async {
         flags: <String, dynamic>{'show_welcome_card': true},
       ),
     ),
+    SmartReview.init(
+      feedbackSink: const EmailFeedbackSink(toEmail: AppConfig.supportEmail),
+      appName: AppConfig.appName,
+      androidPackageName: AppConfig.packageId,
+    ),
   ]);
 
   runApp(
     StarterApp(
       preferences: results[0] as AppPreferences,
       pulseController: results[1] as AppPulseController,
+      reviewController: results[2] as SmartReviewController,
     ),
   );
 }
@@ -34,10 +41,12 @@ class StarterApp extends StatelessWidget {
     super.key,
     required this.pulseController,
     required this.preferences,
+    required this.reviewController,
   });
 
   final AppPulseController pulseController;
   final AppPreferences preferences;
+  final SmartReviewController reviewController;
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +69,7 @@ class StarterApp extends StatelessWidget {
             child: HomeScreen(
               pulseController: pulseController,
               preferences: preferences,
+              reviewController: reviewController,
             ),
           ),
         );

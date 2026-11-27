@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_pulse_kit/app_pulse_kit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_review_feedback/smart_review_feedback.dart';
 
 import '../app_config.dart';
 import '../services/app_preferences.dart';
@@ -16,10 +17,12 @@ class HomeScreen extends StatelessWidget {
     super.key,
     required this.pulseController,
     required this.preferences,
+    required this.reviewController,
   });
 
   final AppPulseController pulseController;
   final AppPreferences preferences;
+  final SmartReviewController reviewController;
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +65,7 @@ class HomeScreen extends StatelessWidget {
                     builder: (BuildContext _) => SettingsScreen(
                       pulseController: pulseController,
                       preferences: preferences,
+                      reviewController: reviewController,
                     ),
                   ),
                 ),

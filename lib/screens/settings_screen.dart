@@ -2,22 +2,26 @@ import 'dart:async';
 
 import 'package:app_pulse_kit/app_pulse_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_review_feedback/smart_review_feedback.dart';
 
 import '../app_config.dart';
 import '../services/app_preferences.dart';
 
 /// Ready-made Material 3 Settings screen with persistent ThemeMode,
-/// EN / বাংলা toggle, remote update check, Privacy Policy link, and a hidden
-/// 5-tap version card that opens `PulseDebugSheet` for QA.
+/// EN / বাংলা toggle, remote update check, smart Rate & Feedback sheet,
+/// Privacy Policy link, and a hidden 5-tap version card opening
+/// `PulseDebugSheet` for QA.
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
     super.key,
     required this.pulseController,
     required this.preferences,
+    required this.reviewController,
   });
 
   final AppPulseController pulseController;
   final AppPreferences preferences;
+  final SmartReviewController reviewController;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -136,6 +140,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           : const Icon(Icons.refresh_rounded),
                       onTap: () {
                         unawaited(widget.pulseController.refresh());
+                      },
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.star_rate_rounded),
+                      title: Text(bn ? 'রেটিং ও মতামত' : 'Rate & Feedback'),
+                      subtitle: Text(
+                        bn
+                            ? 'অ্যাপটি কেমন লাগছে জানান'
+                            : 'Share a rating or report an issue',
+                      ),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () {
+                        unawaited(
+                          widget.reviewController.showNow(
+                            context,
+                            strings: bn
+                                ? const ReviewStrings.bn(
+                                    appName: AppConfig.appName,
+                                  )
+                                : const ReviewStrings.en(
+                                    appName: AppConfig.appName,
+                                  ),
+                            screenName: 'SettingsScreen',
+                          ),
+                        );
                       },
                     ),
                     const Divider(height: 1),

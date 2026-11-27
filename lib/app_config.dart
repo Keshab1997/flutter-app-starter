@@ -14,5 +14,6 @@ class AppConfig {
       'https://raw.githubusercontent.com/Keshab1997/flutter-app-starter/main/pulse.json';
   static const String privacyPolicyUrl =
       'https://github.com/Keshab1997/flutter-app-starter/blob/main/PRIVACY_POLICY.md';
+  static const String supportEmail = 'support@example.com';
   static const bool defaultBangla = false;
 }

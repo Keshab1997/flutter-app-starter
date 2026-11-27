@@ -39,6 +39,11 @@ on:
           - violet
           - slate
         default: indigo
+      support_email:
+        description: Support / feedback email (used by smart_review_feedback)
+        required: false
+        type: string
+        default: "support@example.com"
       include_ai_pack:
         description: Also add admin_api_key_manager (for AI / Gemini / OpenRouter apps)?
         required: false
@@ -73,6 +78,7 @@ jobs:
           APP_DESC: ${{ inputs.description }}
           DEFAULT_LANG: ${{ inputs.default_language }}
           BRAND_COLOR: ${{ inputs.brand_color }}
+          SUPPORT_EMAIL: ${{ inputs.support_email }}
           AI_PACK: ${{ inputs.include_ai_pack }}
           CLEANUP: ${{ inputs.cleanup_setup_files }}
         run: |
@@ -81,6 +87,7 @@ jobs:
             --pkg "$PACKAGE_ID"
             --lang "$DEFAULT_LANG"
             --color "$BRAND_COLOR"
+            --email "${SUPPORT_EMAIL:-support@example.com}"
             --repo "$GITHUB_REPOSITORY"
           )
           if [ -n "$APP_DESC" ]; then

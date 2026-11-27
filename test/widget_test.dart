@@ -4,10 +4,11 @@ import 'package:flutter_app_starter/app_config.dart';
 import 'package:flutter_app_starter/main.dart';
 import 'package:flutter_app_starter/services/app_preferences.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:smart_review_feedback/smart_review_feedback.dart';
 
 void main() {
   testWidgets(
-      'StarterApp renders home, notice banner, settings, and 5-tap inspector',
+      'StarterApp renders home, notice banner, settings, rating sheet, and 5-tap inspector',
       (WidgetTester tester) async {
     final controller = AppPulseController(
       source: MemoryPulseSource(
@@ -28,12 +29,23 @@ void main() {
     );
     await controller.init();
 
+    final reviewController = SmartReviewController(
+      feedbackSink: MemoryFeedbackSink(),
+      storage: InMemoryReviewStorage(),
+      storeAdapter: FakeStoreReviewAdapter(),
+      appName: AppConfig.appName,
+      appVersion: '1.0.0',
+      buildNumber: '1',
+    );
+    await reviewController.init();
+
     final prefs = AppPreferences.inMemory();
 
     await tester.pumpWidget(
       StarterApp(
         pulseController: controller,
         preferences: prefs,
+        reviewController: reviewController,
       ),
     );
     await tester.pumpAndSettle();
@@ -61,6 +73,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(prefs.themeMode, ThemeMode.dark);
 
+    // Open SmartReviewSheet via Rate & Feedback tile
+    await tester.tap(find.byIcon(Icons.star_rate_rounded));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey<String>('review_star_5')), findsOneWidget);
+    await tester.tap(find.byType(OutlinedButton));
+    await tester.pumpAndSettle();
+
     // 5-tap version tile opens PulseDebugSheet
     final versionTile = find.text(AppConfig.appName);
     for (var i = 0; i < 5; i++) {
@@ -70,6 +89,7 @@ void main() {
     expect(find.text('AppPulse Inspector'), findsOneWidget);
 
     controller.dispose();
+    reviewController.dispose();
     prefs.dispose();
   });
 }
