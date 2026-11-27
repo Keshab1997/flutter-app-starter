@@ -45,7 +45,7 @@ on:
         type: string
         default: "support@example.com"
       app_preset:
-        description: Companion kit bundle preset (core 7 kits are always pre-wired)
+        description: Companion kit bundle preset (core 8 kits are always pre-wired)
         required: true
         type: choice
         options:
@@ -53,11 +53,13 @@ on:
           - finance_vault
           - scanner_ai
           - quiz_learning
+          - ai_assistant
+          - arcade_game
           - monetized_pro
           - all_kits
         default: standard
       extra_kits:
-        description: "Extra comma-separated kits: ads,notify,ocr,ai,lock,pdf,streaks,paywall,voice (or all)"
+        description: "Extra kits: ads,notify,ocr,ai,ai_chat,lock,pdf,upi,charts,quiz,image_prep,csv_wa,game_hud,streaks,paywall,voice (or all)"
         required: false
         type: string
         default: ""

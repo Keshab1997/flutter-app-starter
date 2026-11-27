@@ -4,6 +4,7 @@ import 'package:app_pulse_kit/app_pulse_kit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_crash_diagnostics_kit/smart_crash_diagnostics_kit.dart';
+import 'package:smart_legal_consent_kit/smart_legal_consent_kit.dart';
 import 'package:smart_onboarding_kit/smart_onboarding_kit.dart';
 import 'package:smart_review_feedback/smart_review_feedback.dart';
 
@@ -22,6 +23,7 @@ class HomeScreen extends StatelessWidget {
     required this.reviewController,
     this.diagnosticsController,
     this.onboardingController,
+    this.legalController,
   });
 
   final AppPulseController pulseController;
@@ -29,6 +31,7 @@ class HomeScreen extends StatelessWidget {
   final SmartReviewController reviewController;
   final CrashDiagnosticsController? diagnosticsController;
   final OnboardingController? onboardingController;
+  final LegalConsentController? legalController;
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +77,7 @@ class HomeScreen extends StatelessWidget {
                       reviewController: reviewController,
                       diagnosticsController: diagnosticsController,
                       onboardingController: onboardingController,
+                      legalController: legalController,
                     ),
                   ),
                 ),

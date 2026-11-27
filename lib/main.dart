@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_pulse_kit/app_pulse_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_crash_diagnostics_kit/smart_crash_diagnostics_kit.dart';
+import 'package:smart_legal_consent_kit/smart_legal_consent_kit.dart';
 import 'package:smart_onboarding_kit/smart_onboarding_kit.dart';
 import 'package:smart_review_feedback/smart_review_feedback.dart';
 
@@ -56,6 +57,7 @@ Future<void> main() async {
     ),
     CrashDiagnosticsController.init(appName: AppConfig.appName),
     onboardingController.hasCompletedOnboarding(),
+    LegalConsentController.create(),
   ]);
 
   final preferences = results[0] as AppPreferences;
@@ -63,6 +65,7 @@ Future<void> main() async {
   final reviewController = results[2] as SmartReviewController;
   final diagnosticsController = results[3] as CrashDiagnosticsController;
   final completedOnboarding = results[4] as bool;
+  final legalController = results[5] as LegalConsentController;
 
   runApp(
     StarterApp(
@@ -71,6 +74,7 @@ Future<void> main() async {
       reviewController: reviewController,
       diagnosticsController: diagnosticsController,
       onboardingController: onboardingController,
+      legalController: legalController,
       initialShowOnboarding: !completedOnboarding,
     ),
   );
@@ -84,6 +88,7 @@ class StarterApp extends StatefulWidget {
     required this.reviewController,
     this.diagnosticsController,
     this.onboardingController,
+    this.legalController,
     this.initialShowOnboarding = false,
   });
 
@@ -92,6 +97,7 @@ class StarterApp extends StatefulWidget {
   final SmartReviewController reviewController;
   final CrashDiagnosticsController? diagnosticsController;
   final OnboardingController? onboardingController;
+  final LegalConsentController? legalController;
   final bool initialShowOnboarding;
 
   @override
@@ -143,6 +149,7 @@ class _StarterAppState extends State<StarterApp> {
                     reviewController: widget.reviewController,
                     diagnosticsController: widget.diagnosticsController,
                     onboardingController: widget.onboardingController,
+                    legalController: widget.legalController,
                   ),
           ),
         );

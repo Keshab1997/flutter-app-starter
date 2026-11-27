@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_vault_backup/local_vault_backup.dart';
 import 'package:smart_crash_diagnostics_kit/smart_crash_diagnostics_kit.dart';
+import 'package:smart_legal_consent_kit/smart_legal_consent_kit.dart';
 import 'package:smart_onboarding_kit/smart_onboarding_kit.dart';
 import 'package:smart_review_feedback/smart_review_feedback.dart';
 import 'package:smart_share_card/smart_share_card.dart';
@@ -30,6 +31,7 @@ class SettingsScreen extends StatefulWidget {
     required this.reviewController,
     this.diagnosticsController,
     this.onboardingController,
+    this.legalController,
   });
 
   final AppPulseController pulseController;
@@ -37,6 +39,7 @@ class SettingsScreen extends StatefulWidget {
   final SmartReviewController reviewController;
   final CrashDiagnosticsController? diagnosticsController;
   final OnboardingController? onboardingController;
+  final LegalConsentController? legalController;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -406,6 +409,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
               ),
+              if (widget.legalController != null) ...<Widget>[
+                const SizedBox(height: 20),
+                Text(
+                  bn ? 'প্রাইভেসি ও ডেটা নিয়ন্ত্রণ' : 'Privacy & Data Control',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: colors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                LegalSettingsSection(
+                  controller: widget.legalController!,
+                  strings: bn ? const LegalStrings.bn() : const LegalStrings(),
+                  privacyPolicySummary: bn
+                      ? '${AppConfig.appName} অফলাইন-ফার্স্ট হিসেবে কাজ করে। আপনার সেটিংস ও ব্যাকআপ আপনার ফোনেই সুরক্ষিত থাকে।'
+                      : '${AppConfig.appName} operates offline-first. Your preferences and local backups remain stored on this device.',
+                  onOpenExternalPrivacyUrl: () {
+                    unawaited(launchPulseUrl(AppConfig.privacyPolicyUrl));
+                  },
+                ),
+              ],
             ],
           ),
         );

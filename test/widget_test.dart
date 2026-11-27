@@ -6,6 +6,7 @@ import 'package:flutter_app_starter/services/app_preferences.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_crash_diagnostics_kit/smart_crash_diagnostics_kit.dart';
+import 'package:smart_legal_consent_kit/smart_legal_consent_kit.dart';
 import 'package:smart_onboarding_kit/smart_onboarding_kit.dart';
 import 'package:smart_review_feedback/smart_review_feedback.dart';
 
@@ -50,6 +51,7 @@ void main() {
         appName: AppConfig.appName,
         installErrorHooks: false,
       );
+      final legal = await LegalConsentController.create();
       final onboarding = OnboardingController();
       final prefs = AppPreferences.inMemory();
 
@@ -60,6 +62,7 @@ void main() {
           reviewController: reviewController,
           diagnosticsController: diagnostics,
           onboardingController: onboarding,
+          legalController: legal,
         ),
       );
       await tester.pumpAndSettle();

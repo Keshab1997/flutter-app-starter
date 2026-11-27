@@ -57,6 +57,7 @@ DEFAULT_CORE_KITS: list[tuple[str, str]] = [
     ("app_pulse_kit", "Remote soft/force updates, maintenance, notices & flags"),
     ("smart_review_feedback", "4-5★ Play Store review gate & 1-3★ feedback sheet"),
     ("smart_crash_diagnostics_kit", "Offline PII-scrubbed crash & error ring-buffer"),
+    ("smart_legal_consent_kit", "Play Store privacy/terms viewer, AI output flag & 2-step Delete All My Data"),
     ("smart_onboarding_kit", "1st-launch EN/বাংলা walkthrough & What's New sheet"),
     ("local_vault_backup", "Encrypted offline JSON backup & restore"),
     ("bangla_kit", "Bangla digits, Indian ₹/৳ Lakh/Crore & dates"),
@@ -81,6 +82,10 @@ OPTIONAL_KITS: dict[str, tuple[str, str]] = {
         "admin_api_key_manager",
         "Firestore-backed Gemini / OpenRouter API key rotation & health pool",
     ),
+    "ai_chat": (
+        "smart_ai_chat_kit",
+        "Daily free AI quota limiter, rewarded-ad credit boost, SHA-256 prompt cache & chat UI",
+    ),
     "lock": (
         "smart_app_lock_kit",
         "Salted SHA-256 PIN & biometric app lock with auto-lock on background",
@@ -88,6 +93,30 @@ OPTIONAL_KITS: dict[str, tuple[str, str]] = {
     "pdf": (
         "smart_pdf_export_kit",
         "Bangla-safe PDF ledger reports, POS receipts & scanned documents",
+    ),
+    "upi": (
+        "smart_upi_qr_kit",
+        "NPCI upi://pay QR payment card & GST/discount/bill-split calculator",
+    ),
+    "charts": (
+        "smart_charts_stats_kit",
+        "Pure-Dart CustomPainter bar, donut, trend sparkline & progress ring charts",
+    ),
+    "quiz": (
+        "smart_quiz_flashcard_kit",
+        "MCQ exam engine with negative marking, mistake bank & SM-2 flashcards",
+    ),
+    "image_prep": (
+        "smart_image_prep_kit",
+        "Pure-Dart image resizer, high-contrast B&W scan filter & AI token-saver compressor",
+    ),
+    "csv_wa": (
+        "smart_csv_whatsapp_kit",
+        "Excel Bangla-safe UTF-8 BOM CSV export/import & WhatsApp reminder builder",
+    ),
+    "game_hud": (
+        "smart_game_hud_kit",
+        "Casual game HUD, high-score & coin wallet, pause/game-over & rewarded revive",
     ),
     "streaks": (
         "smart_streaks_gamify_kit",
@@ -112,10 +141,25 @@ KIT_ALIASES: dict[str, str] = {
     "smart_ocr_ai_bridge": "ocr",
     "admin_api_key_manager": "ai",
     "ai_pack": "ai",
+    "smart_ai_chat_kit": "ai_chat",
+    "chat": "ai_chat",
     "smart_app_lock_kit": "lock",
     "app_lock": "lock",
     "pin": "lock",
     "smart_pdf_export_kit": "pdf",
+    "smart_upi_qr_kit": "upi",
+    "qr": "upi",
+    "smart_charts_stats_kit": "charts",
+    "chart": "charts",
+    "smart_quiz_flashcard_kit": "quiz",
+    "flashcards": "quiz",
+    "smart_image_prep_kit": "image_prep",
+    "image": "image_prep",
+    "smart_csv_whatsapp_kit": "csv_wa",
+    "csv": "csv_wa",
+    "whatsapp": "csv_wa",
+    "smart_game_hud_kit": "game_hud",
+    "game": "game_hud",
     "smart_streaks_gamify_kit": "streaks",
     "streak": "streaks",
     "smart_paywall_pro_kit": "paywall",
@@ -127,9 +171,11 @@ KIT_ALIASES: dict[str, str] = {
 
 APP_PRESETS: dict[str, list[str]] = {
     "standard": [],
-    "finance_vault": ["lock", "pdf", "notify"],
-    "scanner_ai": ["ai", "ocr", "pdf"],
-    "quiz_learning": ["streaks", "voice", "notify", "ads"],
+    "finance_vault": ["lock", "pdf", "upi", "charts", "csv_wa", "notify"],
+    "scanner_ai": ["ai", "ai_chat", "ocr", "image_prep", "pdf"],
+    "quiz_learning": ["quiz", "streaks", "voice", "charts", "notify", "ads"],
+    "ai_assistant": ["ai", "ai_chat", "voice", "ads", "paywall"],
+    "arcade_game": ["game_hud", "streaks", "ads", "paywall"],
     "monetized_pro": ["ads", "paywall", "notify"],
     "all_kits": sorted(OPTIONAL_KITS.keys()),
 }
@@ -373,7 +419,7 @@ def write_privacy_policy(
         third_party_lines.append(
             "- **Google AdMob (`smart_ad_kit`)**: Used to display banners/interstitial/rewarded ads with consent and remote kill-switch support."
         )
-    if "ai" in selected_kits or "ocr" in selected_kits:
+    if "ai" in selected_kits or "ai_chat" in selected_kits or "ocr" in selected_kits:
         third_party_lines.append(
             "- **AI / OCR Processing**: Text or images explicitly submitted by the user for AI analysis are sent over HTTPS solely to fulfill that request."
         )
@@ -494,11 +540,18 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     ap.add_argument("--with-ai-pack", action="store_true", help="Add admin_api_key_manager")
+    ap.add_argument("--with-ai-chat", action="store_true", help="Add smart_ai_chat_kit")
     ap.add_argument("--with-ads", action="store_true", help="Add smart_ad_kit")
     ap.add_argument("--with-notify", action="store_true", help="Add smart_notify_kit")
     ap.add_argument("--with-ocr", action="store_true", help="Add smart_ocr_ai_bridge")
     ap.add_argument("--with-lock", action="store_true", help="Add smart_app_lock_kit")
     ap.add_argument("--with-pdf", action="store_true", help="Add smart_pdf_export_kit")
+    ap.add_argument("--with-upi", action="store_true", help="Add smart_upi_qr_kit")
+    ap.add_argument("--with-charts", action="store_true", help="Add smart_charts_stats_kit")
+    ap.add_argument("--with-quiz", action="store_true", help="Add smart_quiz_flashcard_kit")
+    ap.add_argument("--with-image-prep", action="store_true", help="Add smart_image_prep_kit")
+    ap.add_argument("--with-csv-wa", action="store_true", help="Add smart_csv_whatsapp_kit")
+    ap.add_argument("--with-game-hud", action="store_true", help="Add smart_game_hud_kit")
     ap.add_argument("--with-streaks", action="store_true", help="Add smart_streaks_gamify_kit")
     ap.add_argument("--with-paywall", action="store_true", help="Add smart_paywall_pro_kit")
     ap.add_argument("--with-voice", action="store_true", help="Add smart_voice_speech_kit")
@@ -536,11 +589,18 @@ def main(argv: list[str] | None = None) -> int:
     explicit_flags: set[str] = set()
     flag_map = {
         "ai": args.with_ai_pack,
+        "ai_chat": args.with_ai_chat,
         "ads": args.with_ads,
         "notify": args.with_notify,
         "ocr": args.with_ocr,
         "lock": args.with_lock,
         "pdf": args.with_pdf,
+        "upi": args.with_upi,
+        "charts": args.with_charts,
+        "quiz": args.with_quiz,
+        "image_prep": args.with_image_prep,
+        "csv_wa": args.with_csv_wa,
+        "game_hud": args.with_game_hud,
         "streaks": args.with_streaks,
         "paywall": args.with_paywall,
         "voice": args.with_voice,

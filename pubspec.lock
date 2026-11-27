@@ -441,6 +441,15 @@ packages:
       url: "https://github.com/Keshab1997/smart_crash_diagnostics_kit.git"
     source: git
     version: "0.1.0"
+  smart_legal_consent_kit:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "68152a77b95ad0937b9e9e41a1ec125c572276e8"
+      url: "https://github.com/Keshab1997/smart_legal_consent_kit.git"
+    source: git
+    version: "0.1.0"
   smart_onboarding_kit:
     dependency: "direct main"
     description:
