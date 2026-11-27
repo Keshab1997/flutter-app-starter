@@ -1,0 +1,81 @@
+name: Setup New App (1-Click)
+
+# Run ONCE right after clicking "Use this template" on GitHub:
+# Actions -> Setup New App (1-Click) -> Run workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      app_name:
+        description: Display name of the app (e.g. Khoroch Pro)
+        required: true
+        type: string
+      package_id:
+        description: Android applicationId (e.g. com.keshab.khorochpro)
+        required: true
+        type: string
+      description:
+        description: Short one-line description (optional)
+        required: false
+        type: string
+        default: ""
+      default_language:
+        description: Default UI language (en or bn)
+        required: true
+        type: choice
+        options:
+          - en
+          - bn
+        default: en
+      cleanup_setup_files:
+        description: Remove this setup workflow & script after configuring?
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Guard against running in template repo
+        if: github.repository == 'Keshab1997/flutter-app-starter'
+        run: |
+          echo "::error::Do not run Setup New App inside the template repo itself. Click 'Use this template' first."
+          exit 1
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure new Flutter app
+        env:
+          APP_NAME: ${{ inputs.app_name }}
+          PACKAGE_ID: ${{ inputs.package_id }}
+          APP_DESC: ${{ inputs.description }}
+          DEFAULT_LANG: ${{ inputs.default_language }}
+          CLEANUP: ${{ inputs.cleanup_setup_files }}
+        run: |
+          ARGS=(--name "$APP_NAME" --pkg "$PACKAGE_ID" --lang "$DEFAULT_LANG" --repo "$GITHUB_REPOSITORY")
+          if [ -n "$APP_DESC" ]; then
+            ARGS+=(--description "$APP_DESC")
+          fi
+          if [ "$CLEANUP" = "true" ]; then
+            ARGS+=(--cleanup)
+          fi
+          python3 tool/setup_new_app.py "${ARGS[@]}"
+
+      - name: Commit and push configured app
+        env:
+          APP_NAME: ${{ inputs.app_name }}
+          PACKAGE_ID: ${{ inputs.package_id }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "chore(init): configure $APP_NAME ($PACKAGE_ID)"
+          git push origin HEAD

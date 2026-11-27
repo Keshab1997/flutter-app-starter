@@ -1,0 +1,19 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  errors:
+    # Keep package:flutter/material.dart clean on Flutter 3.47+ / 3.50+
+    deprecated_member_use: ignore
+  exclude:
+    - build/**
+    - android/**
+    - web/**
+  language:
+    strict-casts: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    unawaited_futures: true
+    prefer_const_constructors: true
+    prefer_final_fields: true

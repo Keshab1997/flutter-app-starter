@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "update": {
+    "latestVersion": "1.0.0",
+    "latestBuildNumber": 1,
+    "minSupportedVersion": "1.0.0",
+    "minSupportedBuildNumber": 1,
+    "androidUrl": "https://play.google.com/store/apps/details?id=com.keshab.flutter_app_starter",
+    "whatsNew": [
+      "Initial release"
+    ]
+  },
+  "maintenance": {
+    "enabled": false,
+    "allowRetry": true
+  },
+  "notices": [],
+  "flags": {
+    "show_welcome_card": true
+  }
+}
