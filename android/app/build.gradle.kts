@@ -45,6 +45,13 @@ android {
 
     buildTypes {
         release {
+            // Shrink & optimize release APK/AAB size for Google Play Store.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
             // Uses upload keystore automatically when android/key.properties is
             // provided (locally or by flutter-builder CI); falls back to debug
             // keys locally so `flutter run --release` works out of the box.
