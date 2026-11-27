@@ -20,9 +20,11 @@
      - `quiz_learning` *(+ `quiz`, `streaks`, `voice`, `charts`, `notify`, `ads`)*
      - `ai_assistant` *(+ `ai`, `ai_chat`, `voice`, `ads`, `paywall`)*
      - `arcade_game` *(+ `game_hud`, `streaks`, `ads`, `paywall`)*
+     - `cloud_supabase` *(+ `cloud_sync`, `supabase`, `lock`, `notify`)*
+     - `cloud_firebase` *(+ `cloud_sync`, `firebase`, `lock`, `notify`)*
      - `monetized_pro` *(+ `ads`, `paywall`, `notify`)*
-     - `all_kits` *(adds all 24 kits in 1 click!)*
-   - **Extra Kits (`extra_kits`):** comma-separated mix-and-match: `ads,notify,ocr,ai,ai_chat,lock,pdf,upi,charts,quiz,image_prep,csv_wa,game_hud,streaks,paywall,voice` (or `all`)
+     - `all_kits` *(adds all 27 kits in 1 click!)*
+   - **Extra Kits (`extra_kits`):** comma-separated mix-and-match: `ads,notify,ocr,ai,ai_chat,lock,pdf,upi,charts,quiz,image_prep,csv_wa,cloud_sync,supabase,firebase,game_hud,streaks,paywall,voice` (or `all`)
 
 **Or run locally (CLI):**
 ```bash
@@ -70,6 +72,9 @@ python3 tool/setup_new_app.py \
 | `quiz` | `--with-quiz` | [`smart_quiz_flashcard_kit`](https://github.com/Keshab1997/smart_quiz_flashcard_kit) | Adds MCQ exam engine with negative marking, persistent `MistakeBank` & SM-2 flashcards |
 | `image_prep` | `--with-image-prep` | [`smart_image_prep_kit`](https://github.com/Keshab1997/smart_image_prep_kit) | Adds pure-Dart image resizer, B&W high-contrast scan filter & AI token-saver Base64 compressor |
 | `csv_wa` | `--with-csv-wa` | [`smart_csv_whatsapp_kit`](https://github.com/Keshab1997/smart_csv_whatsapp_kit) | Adds Excel Bangla-safe UTF-8 BOM CSV codec & WhatsApp due-reminder/khata builder |
+| `cloud_sync` | `--with-cloud-sync` | [`smart_cloud_sync_kit`](https://github.com/Keshab1997/smart_cloud_sync_kit) | Adds offline outbox compaction, Last-Write-Wins HLC resolver & delta pull sync engine |
+| `supabase` | `--with-supabase` | [`smart_supabase_kit`](https://github.com/Keshab1997/smart_supabase_kit) | Adds zero-Gradle Supabase Auth (Email/OTP/Guest + Play Store account deletion), PostgREST & RLS SQL |
+| `firebase` | `--with-firebase` | [`smart_firebase_kit`](https://github.com/Keshab1997/smart_firebase_kit) | Adds Safe-Boot Firebase Auth (guest-to-email link + Play Store account deletion) & chunked Firestore sync |
 | `game_hud` | `--with-game-hud` | [`smart_game_hud_kit`](https://github.com/Keshab1997/smart_game_hud_kit) | Adds casual game HUD, persistent high-score/coins, pause/game-over & rewarded-ad revive |
 | `streaks` | `--with-streaks` | [`smart_streaks_gamify_kit`](https://github.com/Keshab1997/smart_streaks_gamify_kit) | Adds daily streaks, freeze shields, XP leveling & 7-day strip |
 | `paywall` | `--with-paywall` | [`smart_paywall_pro_kit`](https://github.com/Keshab1997/smart_paywall_pro_kit) | Adds Pro paywall, 24h rewarded pass, SHA-256 promo codes + `BILLING` permission |

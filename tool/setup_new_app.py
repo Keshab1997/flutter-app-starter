@@ -114,6 +114,18 @@ OPTIONAL_KITS: dict[str, tuple[str, str]] = {
         "smart_csv_whatsapp_kit",
         "Excel Bangla-safe UTF-8 BOM CSV export/import & WhatsApp reminder builder",
     ),
+    "cloud_sync": (
+        "smart_cloud_sync_kit",
+        "Offline outbox compaction, HLC conflict resolver & delta pull sync engine",
+    ),
+    "supabase": (
+        "smart_supabase_kit",
+        "Zero-Gradle Supabase Auth (Email/OTP/Guest + account delete), PostgREST & RLS SQL",
+    ),
+    "firebase": (
+        "smart_firebase_kit",
+        "Safe-Boot Firebase Auth (guest-to-email link + account delete) & chunked Firestore sync",
+    ),
     "game_hud": (
         "smart_game_hud_kit",
         "Casual game HUD, high-score & coin wallet, pause/game-over & rewarded revive",
@@ -158,6 +170,12 @@ KIT_ALIASES: dict[str, str] = {
     "smart_csv_whatsapp_kit": "csv_wa",
     "csv": "csv_wa",
     "whatsapp": "csv_wa",
+    "smart_cloud_sync_kit": "cloud_sync",
+    "sync": "cloud_sync",
+    "smart_supabase_kit": "supabase",
+    "supa": "supabase",
+    "smart_firebase_kit": "firebase",
+    "fb": "firebase",
     "smart_game_hud_kit": "game_hud",
     "game": "game_hud",
     "smart_streaks_gamify_kit": "streaks",
@@ -176,6 +194,8 @@ APP_PRESETS: dict[str, list[str]] = {
     "quiz_learning": ["quiz", "streaks", "voice", "charts", "notify", "ads"],
     "ai_assistant": ["ai", "ai_chat", "voice", "ads", "paywall"],
     "arcade_game": ["game_hud", "streaks", "ads", "paywall"],
+    "cloud_supabase": ["cloud_sync", "supabase", "lock", "notify"],
+    "cloud_firebase": ["cloud_sync", "firebase", "lock", "notify"],
     "monetized_pro": ["ads", "paywall", "notify"],
     "all_kits": sorted(OPTIONAL_KITS.keys()),
 }
@@ -427,6 +447,10 @@ def write_privacy_policy(
         third_party_lines.append(
             "- **Google Play Billing**: Purchases and subscriptions are processed securely by Google Play."
         )
+    if "supabase" in selected_kits or "firebase" in selected_kits or "cloud_sync" in selected_kits:
+        third_party_lines.append(
+            "- **Optional Cloud Account & Sync**: If you sign in to sync data across devices, you can permanently delete your cloud account and synced data anytime from inside Settings."
+        )
     third_party_block = "\n".join(third_party_lines)
 
     content = f"""# Privacy Policy — {app_name}
@@ -551,6 +575,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--with-quiz", action="store_true", help="Add smart_quiz_flashcard_kit")
     ap.add_argument("--with-image-prep", action="store_true", help="Add smart_image_prep_kit")
     ap.add_argument("--with-csv-wa", action="store_true", help="Add smart_csv_whatsapp_kit")
+    ap.add_argument("--with-cloud-sync", action="store_true", help="Add smart_cloud_sync_kit")
+    ap.add_argument("--with-supabase", action="store_true", help="Add smart_supabase_kit")
+    ap.add_argument("--with-firebase", action="store_true", help="Add smart_firebase_kit")
     ap.add_argument("--with-game-hud", action="store_true", help="Add smart_game_hud_kit")
     ap.add_argument("--with-streaks", action="store_true", help="Add smart_streaks_gamify_kit")
     ap.add_argument("--with-paywall", action="store_true", help="Add smart_paywall_pro_kit")
@@ -600,6 +627,9 @@ def main(argv: list[str] | None = None) -> int:
         "quiz": args.with_quiz,
         "image_prep": args.with_image_prep,
         "csv_wa": args.with_csv_wa,
+        "cloud_sync": args.with_cloud_sync,
+        "supabase": args.with_supabase,
+        "firebase": args.with_firebase,
         "game_hud": args.with_game_hud,
         "streaks": args.with_streaks,
         "paywall": args.with_paywall,

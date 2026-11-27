@@ -55,11 +55,13 @@ on:
           - quiz_learning
           - ai_assistant
           - arcade_game
+          - cloud_supabase
+          - cloud_firebase
           - monetized_pro
           - all_kits
         default: standard
       extra_kits:
-        description: "Extra kits: ads,notify,ocr,ai,ai_chat,lock,pdf,upi,charts,quiz,image_prep,csv_wa,game_hud,streaks,paywall,voice (or all)"
+        description: "Extra kits: ads,notify,ocr,ai,ai_chat,lock,pdf,upi,charts,quiz,image_prep,csv_wa,cloud_sync,supabase,firebase,game_hud,streaks,paywall,voice (or all)"
         required: false
         type: string
         default: ""
