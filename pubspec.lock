@@ -26,6 +26,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.13.1"
+  bangla_kit:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: b5d78a15869ec0a6f2b8fbfc217b535f3abade01
+      url: "https://github.com/Keshab1997/bangla_kit.git"
+    source: git
+    version: "0.1.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -225,6 +234,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.1"
+  local_vault_backup:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "764d102703183f7c71d9e811475d43580ad33de5"
+      url: "https://github.com/Keshab1997/local_vault_backup.git"
+    source: git
+    version: "0.1.0"
   logging:
     dependency: transitive
     description:
@@ -414,6 +432,24 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  smart_crash_diagnostics_kit:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "595252de1f44dab39de43e5ceeef44c73fe55687"
+      url: "https://github.com/Keshab1997/smart_crash_diagnostics_kit.git"
+    source: git
+    version: "0.1.0"
+  smart_onboarding_kit:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "6ec6bfba4621398a9432d80af10cd9e752dc9430"
+      url: "https://github.com/Keshab1997/smart_onboarding_kit.git"
+    source: git
+    version: "0.1.0"
   smart_review_feedback:
     dependency: "direct main"
     description:
@@ -421,6 +457,15 @@ packages:
       ref: HEAD
       resolved-ref: e9894e4a9135717dd5e7f66e626e5390af969f7c
       url: "https://github.com/Keshab1997/smart_review_feedback.git"
+    source: git
+    version: "0.1.0"
+  smart_share_card:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "5ddd9f9910ad2249e176c593bdd9231061ebc52f"
+      url: "https://github.com/Keshab1997/smart_share_card.git"
     source: git
     version: "0.1.0"
   source_span:

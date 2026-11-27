@@ -3,8 +3,10 @@
 
 Renames the Flutter package, Android applicationId/namespace/MainActivity,
 Web manifest/title, `AppConfig` (brand color, pulse URL, privacy policy URL),
-`pulse.json`, `PRIVACY_POLICY.md`, `AGENTS.md`, `README.md`, and generates
-brand-colored Android & Web launcher icons using stdlib Python only.
+`pulse.json`, `PRIVACY_POLICY.md`, `AGENTS.md`, `README.md`, wires any selected
+companion `Keshab1997` Flutter kits (dependencies, AndroidManifest permissions,
+R8 keep rules, remote kill-switches), and generates brand-colored Android & Web
+launcher icons using stdlib Python only.
 
 Usage:
     python3 tool/setup_new_app.py \
@@ -12,7 +14,9 @@ Usage:
       --pkg com.keshab.khorochpro \
       --repo Keshab1997/khoroch-pro \
       --lang bn \
-      --color "#0F766E"
+      --color teal \
+      --preset finance_vault \
+      --kits ads,share
 
 Stdlib only, Python >= 3.8.
 """
@@ -47,6 +51,119 @@ COLOR_PRESETS: dict[str, str] = {
     "violet": "#7C3AED",
     "slate": "#334155",
 }
+
+# Pre-wired zero-native-plugin kits already inside flutter-app-starter:
+DEFAULT_CORE_KITS: list[tuple[str, str]] = [
+    ("app_pulse_kit", "Remote soft/force updates, maintenance, notices & flags"),
+    ("smart_review_feedback", "4-5★ Play Store review gate & 1-3★ feedback sheet"),
+    ("smart_crash_diagnostics_kit", "Offline PII-scrubbed crash & error ring-buffer"),
+    ("smart_onboarding_kit", "1st-launch EN/বাংলা walkthrough & What's New sheet"),
+    ("local_vault_backup", "Encrypted offline JSON backup & restore"),
+    ("bangla_kit", "Bangla digits, Indian ₹/৳ Lakh/Crore & dates"),
+    ("smart_share_card", "Branded WhatsApp / Status PNG share cards"),
+]
+
+# Optional 1-click kits selectable via --preset, --kits, or --with-<slug>:
+OPTIONAL_KITS: dict[str, tuple[str, str]] = {
+    "ads": (
+        "smart_ad_kit",
+        "AdMob banners, capped interstitials, rewarded prompts & remote kill-switch",
+    ),
+    "notify": (
+        "smart_notify_kit",
+        "Local reminders, daily streak nudges & Quiet Hours",
+    ),
+    "ocr": (
+        "smart_ocr_ai_bridge",
+        "5-script on-device ML Kit OCR + AI failover bridge",
+    ),
+    "ai": (
+        "admin_api_key_manager",
+        "Firestore-backed Gemini / OpenRouter API key rotation & health pool",
+    ),
+    "lock": (
+        "smart_app_lock_kit",
+        "Salted SHA-256 PIN & biometric app lock with auto-lock on background",
+    ),
+    "pdf": (
+        "smart_pdf_export_kit",
+        "Bangla-safe PDF ledger reports, POS receipts & scanned documents",
+    ),
+    "streaks": (
+        "smart_streaks_gamify_kit",
+        "Daily streaks, freeze shields, XP leveling & 7-day strip",
+    ),
+    "paywall": (
+        "smart_paywall_pro_kit",
+        "Pro upgrade sheet, 24h rewarded ad-free pass & SHA-256 promo codes",
+    ),
+    "voice": (
+        "smart_voice_speech_kit",
+        "EN/বাংলা TTS & STT controller with danda chunking & speed presets",
+    ),
+}
+
+KIT_ALIASES: dict[str, str] = {
+    "smart_ad_kit": "ads",
+    "ad": "ads",
+    "admob": "ads",
+    "smart_notify_kit": "notify",
+    "notifications": "notify",
+    "smart_ocr_ai_bridge": "ocr",
+    "admin_api_key_manager": "ai",
+    "ai_pack": "ai",
+    "smart_app_lock_kit": "lock",
+    "app_lock": "lock",
+    "pin": "lock",
+    "smart_pdf_export_kit": "pdf",
+    "smart_streaks_gamify_kit": "streaks",
+    "streak": "streaks",
+    "smart_paywall_pro_kit": "paywall",
+    "pro": "paywall",
+    "smart_voice_speech_kit": "voice",
+    "tts": "voice",
+    "speech": "voice",
+}
+
+APP_PRESETS: dict[str, list[str]] = {
+    "standard": [],
+    "finance_vault": ["lock", "pdf", "notify"],
+    "scanner_ai": ["ai", "ocr", "pdf"],
+    "quiz_learning": ["streaks", "voice", "notify", "ads"],
+    "monetized_pro": ["ads", "paywall", "notify"],
+    "all_kits": sorted(OPTIONAL_KITS.keys()),
+}
+
+SAMPLE_ADMOB_APP_ID = "ca-app-pub-3940256099942544~3347511713"
+
+
+def resolve_selected_kits(
+    preset: str,
+    kits_csv: str,
+    explicit_flags: set[str],
+) -> list[str]:
+    if preset not in APP_PRESETS:
+        raise ValueError(
+            f"Unknown --preset {preset!r} (expected one of {sorted(APP_PRESETS)})"
+        )
+    chosen: set[str] = set(APP_PRESETS[preset]) | set(explicit_flags)
+
+    if kits_csv.strip():
+        for raw_token in re.split(r"[,\s+]+", kits_csv.strip().lower()):
+            if not raw_token or raw_token == "none":
+                continue
+            if raw_token in ("all", "all_kits", "*"):
+                chosen.update(OPTIONAL_KITS.keys())
+                continue
+            canonical = KIT_ALIASES.get(raw_token, raw_token)
+            if canonical not in OPTIONAL_KITS:
+                raise ValueError(
+                    f"Unknown kit {raw_token!r} in --kits "
+                    f"(available: {', '.join(sorted(OPTIONAL_KITS))}, or 'all')"
+                )
+            chosen.add(canonical)
+
+    return sorted(chosen)
 
 
 def resolve_hex_color(raw: str) -> str:
@@ -98,7 +215,6 @@ def render_brand_icon_png(size: int, hex_color: str, *, maskable: bool = False) 
     g0 = int(hex_digits[2:4], 16)
     b0 = int(hex_digits[4:6], 16)
 
-    # Lighter highlight at top-left, richer deeper tone at bottom-right.
     r_hi = min(255, int(r0 * 1.18 + 20))
     g_hi = min(255, int(g0 * 1.18 + 20))
     b_hi = min(255, int(b0 * 1.18 + 20))
@@ -116,11 +232,10 @@ def render_brand_icon_png(size: int, hex_color: str, *, maskable: bool = False) 
 
     rows = bytearray()
     for y in range(size):
-        rows.append(0)  # PNG filter type 0
+        rows.append(0)
         yf = float(y)
         for x in range(size):
             xf = float(x)
-            # Rounded-rect mask
             if not maskable:
                 dx = max(margin + radius - xf, 0.0, xf - (size - 1 - margin - radius))
                 dy = max(margin + radius - yf, 0.0, yf - (size - 1 - margin - radius))
@@ -135,10 +250,8 @@ def render_brand_icon_png(size: int, hex_color: str, *, maskable: bool = False) 
             g = int(g_hi + (g_lo - g_hi) * t)
             b = int(b_hi + (b_lo - b_hi) * t)
 
-            # Subtle clean white geometric pulse emblem (ring + center dot)
             dd = ((xf - cx) ** 2 + (yf - cy) ** 2) ** 0.5
             if abs(dd - outer_r) <= ring_w / 2.0 or dd <= inner_r:
-                # Blend crisp white emblem over gradient
                 r = int(r * 0.08 + 255 * 0.92)
                 g = int(g * 0.08 + 255 * 0.92)
                 b = int(b * 0.08 + 255 * 0.92)
@@ -156,7 +269,6 @@ def render_brand_icon_png(size: int, hex_color: str, *, maskable: bool = False) 
 
 
 def generate_icons(root: Path, hex_color: str) -> None:
-    """Replace default Flutter launcher & web icons with brand-colored icons."""
     targets: list[tuple[Path, int, bool]] = [
         (root / "android/app/src/main/res/mipmap-mdpi/ic_launcher.png", 48, False),
         (root / "android/app/src/main/res/mipmap-hdpi/ic_launcher.png", 72, False),
@@ -199,8 +311,78 @@ def move_main_activity(root: Path, new_pkg: str) -> None:
             parent = parent.parent
 
 
-def write_privacy_policy(root: Path, app_name: str, package_id: str, repo: str) -> None:
+def configure_android_for_kits(root: Path, selected_kits: list[str]) -> None:
+    manifest_path = root / "android" / "app" / "src" / "main" / "AndroidManifest.xml"
+    if manifest_path.is_file():
+        manifest = manifest_path.read_text(encoding="utf-8")
+        permissions_to_add: list[str] = []
+        if "notify" in selected_kits:
+            permissions_to_add.append("android.permission.POST_NOTIFICATIONS")
+        if "paywall" in selected_kits:
+            permissions_to_add.append("com.android.vending.BILLING")
+
+        for perm in permissions_to_add:
+            tag = f'<uses-permission android:name="{perm}" />'
+            if perm not in manifest:
+                manifest = manifest.replace(
+                    '<uses-permission android:name="android.permission.INTERNET" />',
+                    f'<uses-permission android:name="android.permission.INTERNET" />\n    {tag}',
+                    1,
+                )
+
+        if "ads" in selected_kits and "com.google.android.gms.ads.APPLICATION_ID" not in manifest:
+            admob_meta = (
+                "        <!-- Sample AdMob App ID (replace before Play Store release) -->\n"
+                "        <meta-data\n"
+                '            android:name="com.google.android.gms.ads.APPLICATION_ID"\n'
+                f'            android:value="{SAMPLE_ADMOB_APP_ID}" />\n'
+            )
+            manifest = manifest.replace(
+                "    </application>",
+                f"{admob_meta}    </application>",
+                1,
+            )
+
+        manifest_path.write_text(manifest, encoding="utf-8")
+
+    if "ocr" in selected_kits:
+        proguard_path = root / "android" / "app" / "proguard-rules.pro"
+        if proguard_path.is_file():
+            rules = proguard_path.read_text(encoding="utf-8")
+            if "com.google.mlkit" not in rules:
+                rules += (
+                    "\n# ML Kit on-device OCR keep rules (smart_ocr_ai_bridge)\n"
+                    "-keep class com.google.mlkit.** { *; }\n"
+                    "-dontwarn com.google.mlkit.**\n"
+                )
+                proguard_path.write_text(rules, encoding="utf-8")
+
+
+def write_privacy_policy(
+    root: Path,
+    app_name: str,
+    package_id: str,
+    repo: str,
+    selected_kits: list[str],
+) -> None:
     today = datetime.date.today().isoformat()
+    third_party_lines = [
+        "- By default, core preferences, encrypted backups, and error diagnostics stay offline on your device."
+    ]
+    if "ads" in selected_kits:
+        third_party_lines.append(
+            "- **Google AdMob (`smart_ad_kit`)**: Used to display banners/interstitial/rewarded ads with consent and remote kill-switch support."
+        )
+    if "ai" in selected_kits or "ocr" in selected_kits:
+        third_party_lines.append(
+            "- **AI / OCR Processing**: Text or images explicitly submitted by the user for AI analysis are sent over HTTPS solely to fulfill that request."
+        )
+    if "paywall" in selected_kits:
+        third_party_lines.append(
+            "- **Google Play Billing**: Purchases and subscriptions are processed securely by Google Play."
+        )
+    third_party_block = "\n".join(third_party_lines)
+
     content = f"""# Privacy Policy — {app_name}
 
 **Last updated:** {today}
@@ -211,8 +393,8 @@ def write_privacy_policy(root: Path, app_name: str, package_id: str, repo: str) 
 - By default, this app operates offline-first and stores user preferences (such as theme and language selection) locally on your device.
 - The app fetches a read-only remote configuration file (`pulse.json`) solely to check for app updates, maintenance notices, and feature availability. No personal data is transmitted during this check.
 
-## Third-Party Services
-- If optional services (such as Google Play Services, Firebase, or analytics/ads) are enabled in future releases, this policy will be updated accordingly.
+## Third-Party Services & Optional Modules
+{third_party_block}
 
 ## Contact
 If you have any questions about this Privacy Policy, please contact the developer via the project repository:
@@ -227,7 +409,16 @@ def write_starter_readme(
     description: str,
     package_id: str,
     repo: str,
+    selected_kits: list[str],
 ) -> None:
+    kit_bullets = [
+        f"- **`{pkg}`** — {desc}" for pkg, desc in DEFAULT_CORE_KITS
+    ]
+    for slug in selected_kits:
+        pkg, desc = OPTIONAL_KITS[slug]
+        kit_bullets.append(f"- **`{pkg}`** — {desc}")
+    kits_md = "\n".join(kit_bullets)
+
     content = f"""# {app_name}
 
 {description}
@@ -245,6 +436,10 @@ flutter test
 # Local screenshots (offline, ~1s/screen)
 python3 tool/local_screenshots.py --shot home,settings
 ```
+
+## Included Flutter Kits
+
+{kits_md}
 
 ## Remote config (`app_pulse_kit`)
 
@@ -285,10 +480,29 @@ def main(argv: list[str] | None = None) -> int:
         help="Support / feedback email for smart_review_feedback",
     )
     ap.add_argument(
-        "--with-ai-pack",
-        action="store_true",
-        help="Also add Keshab1997/admin_api_key_manager to pubspec.yaml",
+        "--preset",
+        choices=sorted(APP_PRESETS.keys()),
+        default="standard",
+        help="App starter kit bundle preset",
     )
+    ap.add_argument(
+        "--kits",
+        default="",
+        help=(
+            "Comma-separated extra kits to add: "
+            f"{','.join(sorted(OPTIONAL_KITS.keys()))} (or 'all')"
+        ),
+    )
+    ap.add_argument("--with-ai-pack", action="store_true", help="Add admin_api_key_manager")
+    ap.add_argument("--with-ads", action="store_true", help="Add smart_ad_kit")
+    ap.add_argument("--with-notify", action="store_true", help="Add smart_notify_kit")
+    ap.add_argument("--with-ocr", action="store_true", help="Add smart_ocr_ai_bridge")
+    ap.add_argument("--with-lock", action="store_true", help="Add smart_app_lock_kit")
+    ap.add_argument("--with-pdf", action="store_true", help="Add smart_pdf_export_kit")
+    ap.add_argument("--with-streaks", action="store_true", help="Add smart_streaks_gamify_kit")
+    ap.add_argument("--with-paywall", action="store_true", help="Add smart_paywall_pro_kit")
+    ap.add_argument("--with-voice", action="store_true", help="Add smart_voice_speech_kit")
+    ap.add_argument("--with-all-kits", action="store_true", help="Add all optional Flutter kits")
     ap.add_argument("--cleanup", action="store_true", help="Remove setup script & workflow after running")
     ap.add_argument(
         "--allow-template-repo",
@@ -319,8 +533,27 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
+    explicit_flags: set[str] = set()
+    flag_map = {
+        "ai": args.with_ai_pack,
+        "ads": args.with_ads,
+        "notify": args.with_notify,
+        "ocr": args.with_ocr,
+        "lock": args.with_lock,
+        "pdf": args.with_pdf,
+        "streaks": args.with_streaks,
+        "paywall": args.with_paywall,
+        "voice": args.with_voice,
+    }
+    for slug, active in flag_map.items():
+        if active:
+            explicit_flags.add(slug)
+    if args.with_all_kits:
+        explicit_flags.update(OPTIONAL_KITS.keys())
+
     try:
         hex_color = resolve_hex_color(args.color)
+        selected_kits = resolve_selected_kits(args.preset, args.kits, explicit_flags)
     except ValueError as exc:
         print(f"setup_new_app: ERROR: {exc}", file=sys.stderr)
         return 2
@@ -336,21 +569,26 @@ def main(argv: list[str] | None = None) -> int:
     play_url = f"https://play.google.com/store/apps/details?id={package_id}"
     dart_color = f"0xFF{hex_color.lstrip('#')}"
 
-    # 1. pubspec.yaml
+    # 1. pubspec.yaml + optional kits
     pubspec = root / "pubspec.yaml"
     if pubspec.is_file():
         txt = pubspec.read_text(encoding="utf-8")
         txt = re.sub(r"^name:\s*.*$", f"name: {dart_pkg}", txt, count=1, flags=re.M)
         txt = re.sub(r"^description:\s*.*$", f"description: {description}", txt, count=1, flags=re.M)
-        if args.with_ai_pack and "admin_api_key_manager:" not in txt:
-            ai_dep = (
-                "  admin_api_key_manager:\n"
-                "    git:\n"
-                "      url: https://github.com/Keshab1997/admin_api_key_manager.git\n"
-            )
+        extra_blocks: list[str] = []
+        for slug in selected_kits:
+            pkg_name, _ = OPTIONAL_KITS[slug]
+            if f"  {pkg_name}:" not in txt:
+                extra_blocks.append(
+                    f"  {pkg_name}:\n"
+                    "    git:\n"
+                    f"      url: https://github.com/Keshab1997/{pkg_name}.git\n"
+                )
+        if extra_blocks:
+            joined = "".join(extra_blocks)
             txt = txt.replace(
                 "  shared_preferences: ^2.2.2\n",
-                f"  shared_preferences: ^2.2.2\n{ai_dep}",
+                f"  shared_preferences: ^2.2.2\n{joined}",
                 1,
             )
         pubspec.write_text(txt, encoding="utf-8")
@@ -392,7 +630,7 @@ class AppConfig {{
             encoding="utf-8",
         )
 
-    # 4. pulse.json
+    # 4. pulse.json (+ remote ads_enabled kill-switch when ads kit is selected)
     pulse_path = root / "pulse.json"
     if pulse_path.is_file():
         data = json.loads(pulse_path.read_text(encoding="utf-8"))
@@ -400,12 +638,15 @@ class AppConfig {{
             update = data.setdefault("update", {})
             if isinstance(update, dict):
                 update["androidUrl"] = play_url
+            flags = data.setdefault("flags", {})
+            if isinstance(flags, dict) and "ads" in selected_kits:
+                flags.setdefault("ads_enabled", True)
             pulse_path.write_text(
                 json.dumps(data, indent=2, ensure_ascii=False) + "\n",
                 encoding="utf-8",
             )
 
-    # 5. Android files
+    # 5. Android files + kit-specific permissions/proguard
     replace_in_file(
         root / "android" / "app" / "build.gradle.kts",
         [(OLD_ANDROID_PKG, package_id)],
@@ -415,6 +656,7 @@ class AppConfig {{
         [(f'android:label="{OLD_DART_PKG}"', f'android:label="{app_name}"')],
     )
     move_main_activity(root, package_id)
+    configure_android_for_kits(root, selected_kits)
 
     # 6. Web files
     replace_in_file(
@@ -442,24 +684,25 @@ class AppConfig {{
     generate_icons(root, hex_color)
 
     # 8. Privacy Policy, AGENTS.md & README.md
-    write_privacy_policy(root, app_name, package_id, repo)
+    write_privacy_policy(root, app_name, package_id, repo, selected_kits)
     replace_in_file(root / "AGENTS.md", [(OLD_DART_PKG, app_name)])
-    write_starter_readme(root, app_name, description, package_id, repo)
+    write_starter_readme(root, app_name, description, package_id, repo, selected_kits)
 
     # 9. Remove template .iml if present
     old_iml = root / f"{OLD_DART_PKG}.iml"
     if old_iml.is_file():
         old_iml.unlink()
 
-    # 10. Optional cleanup of one-time setup files
+    # 10. Optional cleanup of one-time setup files (or remove stale lockfile if extra deps were added)
+    if selected_kits or args.cleanup:
+        lock = root / "pubspec.lock"
+        if lock.is_file():
+            lock.unlink()
     if args.cleanup:
         for rel in (".github/workflows/setup-new-app.yml", "tool/setup_new_app.py"):
             target = root / rel
             if target.is_file():
                 target.unlink()
-        lock = root / "pubspec.lock"
-        if lock.is_file():
-            lock.unlink()
 
     idea_dir = root / ".idea"
     if idea_dir.is_dir():
@@ -467,7 +710,8 @@ class AppConfig {{
 
     print(
         f"setup_new_app: configured '{app_name}' "
-        f"(dart={dart_pkg}, android={package_id}, lang={args.lang}, color={hex_color}, ai_pack={args.with_ai_pack})"
+        f"(dart={dart_pkg}, android={package_id}, lang={args.lang}, "
+        f"color={hex_color}, preset={args.preset}, extra_kits={selected_kits})"
     )
     return 0
 

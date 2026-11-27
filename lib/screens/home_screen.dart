@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:app_pulse_kit/app_pulse_kit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_crash_diagnostics_kit/smart_crash_diagnostics_kit.dart';
+import 'package:smart_onboarding_kit/smart_onboarding_kit.dart';
 import 'package:smart_review_feedback/smart_review_feedback.dart';
 
 import '../app_config.dart';
@@ -18,11 +20,15 @@ class HomeScreen extends StatelessWidget {
     required this.pulseController,
     required this.preferences,
     required this.reviewController,
+    this.diagnosticsController,
+    this.onboardingController,
   });
 
   final AppPulseController pulseController;
   final AppPreferences preferences;
   final SmartReviewController reviewController;
+  final CrashDiagnosticsController? diagnosticsController;
+  final OnboardingController? onboardingController;
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +72,8 @@ class HomeScreen extends StatelessWidget {
                       pulseController: pulseController,
                       preferences: preferences,
                       reviewController: reviewController,
+                      diagnosticsController: diagnosticsController,
+                      onboardingController: onboardingController,
                     ),
                   ),
                 ),
@@ -78,10 +86,7 @@ class HomeScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 32),
         children: <Widget>[
-          PulseNoticeBanner(
-            controller: pulseController,
-            strings: strings,
-          ),
+          PulseNoticeBanner(controller: pulseController, strings: strings),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -116,8 +121,8 @@ class HomeScreen extends StatelessWidget {
                           const SizedBox(height: 6),
                           Text(
                             isBangla
-                                ? 'Material 3, রিমোট আপডেট, নোটিশ ব্যানার, সেটিংস ও ফিচার ফ্ল্যাগ আগে থেকেই সেট করা আছে।'
-                                : 'Material 3, remote updates, notice banners, persistent settings, and feature flags are pre-wired.',
+                                ? 'Material 3, রিমোট আপডেট, নোটিশ ব্যানার, এনক্রিপ্টেড ব্যাকআপ, শেয়ার কার্ড ও ডায়াগনস্টিকস আগে থেকেই সেট করা আছে।'
+                                : 'Material 3, remote updates, notice banners, encrypted backups, share cards, and offline diagnostics are pre-wired.',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: colors.onSurfaceVariant,
                               height: 1.45,
@@ -133,8 +138,10 @@ class HomeScreen extends StatelessWidget {
                   elevation: 0,
                   color: colors.surfaceContainerLow,
                   child: ListTile(
-                    leading:
-                        Icon(Icons.verified_rounded, color: colors.primary),
+                    leading: Icon(
+                      Icons.verified_rounded,
+                      color: colors.primary,
+                    ),
                     title: Text(
                       isBangla
                           ? 'রিমোট কনফিগ স্ট্যাটাস'

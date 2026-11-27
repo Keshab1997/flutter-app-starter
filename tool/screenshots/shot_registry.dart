@@ -10,9 +10,7 @@ import 'shot_framework.dart';
 
 final AppPulseController _shotPulse = AppPulseController(
   source: MemoryPulseSource(
-    const PulseConfig(
-      flags: <String, dynamic>{'show_welcome_card': true},
-    ),
+    const PulseConfig(flags: <String, dynamic>{'show_welcome_card': true}),
   ),
   storage: InMemoryPulseStorage(),
   appVersion: '1.0.0',

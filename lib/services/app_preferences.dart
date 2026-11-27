@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:local_vault_backup/local_vault_backup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app_config.dart';
 
 /// Persists user UI preferences (ThemeMode & EN/বাংলা language) locally via
-/// [SharedPreferences], with an in-memory constructor for fast offline tests.
+/// [SharedPreferences], with an in-memory constructor for fast offline tests
+/// and a ready-made [VaultBackupEngine] adapter for encrypted backups.
 class AppPreferences extends ChangeNotifier {
   AppPreferences._({
     required SharedPreferences? prefs,
@@ -78,6 +80,33 @@ class AppPreferences extends ChangeNotifier {
       case ThemeMode.light:
         return setThemeMode(ThemeMode.system);
     }
+  }
+
+  /// Exports local preferences (extend with app database tables in new apps).
+  Future<Map<String, dynamic>> exportVaultData() async {
+    return <String, dynamic>{_themeKey: _themeMode.name, _banglaKey: _isBangla};
+  }
+
+  /// Restores preferences from a verified [local_vault_backup] payload.
+  Future<void> importVaultData(Map<String, dynamic> payload) async {
+    if (payload.containsKey(_themeKey)) {
+      await setThemeMode(_parseThemeMode(payload[_themeKey] as String?));
+    }
+    if (payload[_banglaKey] is bool) {
+      await setBangla(payload[_banglaKey] as bool);
+    }
+  }
+
+  /// Ready-to-use offline encrypted backup & restore engine.
+  VaultBackupEngine createVaultEngine() {
+    return VaultBackupEngine(
+      appId: AppConfig.packageId,
+      schemaVersion: 1,
+      adapter: CallbackVaultAdapter(
+        onExport: exportVaultData,
+        onImport: importVaultData,
+      ),
+    );
   }
 
   static ThemeMode _parseThemeMode(String? raw) {

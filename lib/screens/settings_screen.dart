@@ -1,27 +1,42 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:app_pulse_kit/app_pulse_kit.dart';
+import 'package:bangla_kit/bangla_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:local_vault_backup/local_vault_backup.dart';
+import 'package:smart_crash_diagnostics_kit/smart_crash_diagnostics_kit.dart';
+import 'package:smart_onboarding_kit/smart_onboarding_kit.dart';
 import 'package:smart_review_feedback/smart_review_feedback.dart';
+import 'package:smart_share_card/smart_share_card.dart';
 
 import '../app_config.dart';
+import '../main.dart';
 import '../services/app_preferences.dart';
 
 /// Ready-made Material 3 Settings screen with persistent ThemeMode,
-/// EN / বাংলা toggle, remote update check, smart Rate & Feedback sheet,
-/// Privacy Policy link, and a hidden 5-tap version card opening
-/// `PulseDebugSheet` for QA.
+/// EN / বাংলা toggle (`bangla_kit`), encrypted Backup & Restore
+/// (`local_vault_backup`), Share Card preview (`smart_share_card`), App Tour
+/// (`smart_onboarding_kit`), offline Crash Diagnostics
+/// (`smart_crash_diagnostics_kit`), remote update check (`app_pulse_kit`),
+/// Rate & Feedback (`smart_review_feedback`), Privacy Policy link, and a
+/// hidden 5-tap version card opening `PulseDebugSheet` for QA.
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
     super.key,
     required this.pulseController,
     required this.preferences,
     required this.reviewController,
+    this.diagnosticsController,
+    this.onboardingController,
   });
 
   final AppPulseController pulseController;
   final AppPreferences preferences;
   final SmartReviewController reviewController;
+  final CrashDiagnosticsController? diagnosticsController;
+  final OnboardingController? onboardingController;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -40,21 +55,139 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _openVaultSheet(BuildContext context, bool bn) {
+    final engine = widget.preferences.createVaultEngine();
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (BuildContext sheetContext) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            16,
+            4,
+            16,
+            24 + MediaQuery.of(sheetContext).viewInsets.bottom,
+          ),
+          child: VaultBackupCard(
+            engine: engine,
+            strings: bn ? const VaultStrings.bn() : const VaultStrings.en(),
+            onSaveBackup: (Uint8List bytes, String fileName) async {
+              await Clipboard.setData(ClipboardData(text: utf8.decode(bytes)));
+              if (sheetContext.mounted) {
+                ScaffoldMessenger.of(sheetContext).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      bn
+                          ? '$fileName ক্লিপবোর্ডে কপি হয়েছে'
+                          : 'Copied $fileName JSON to clipboard',
+                    ),
+                  ),
+                );
+              }
+            },
+            onPickBackup: () async {
+              final data = await Clipboard.getData(Clipboard.kTextPlain);
+              final raw = data?.text?.trim();
+              if (raw == null || raw.isEmpty) return null;
+              return Uint8List.fromList(utf8.encode(raw));
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _openShareCardSheet(BuildContext context, bool bn) {
+    final cardController = SmartShareCardController();
+    const playUrl =
+        'https://play.google.com/store/apps/details?id=${AppConfig.packageId}';
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (BuildContext sheetContext) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              SmartShareCardCanvas(
+                controller: cardController,
+                child: BrandedShareCardShell(
+                  brand: ShareCardBrand(
+                    appName: AppConfig.appName,
+                    tagline: bn
+                        ? 'দ্রুত, সুন্দর ও অফলাইন-ফার্স্ট'
+                        : 'Fast, clean & offline-first',
+                    playStoreUrl: playUrl,
+                  ),
+                  badgeText: bn ? 'রেডিমেড' : 'READY',
+                  body: Text(
+                    bn
+                        ? '${AppConfig.appName} ব্যবহার করে দেখুন — বাংলা ও English সাপোর্টসহ!'
+                        : 'Try ${AppConfig.appName} on Google Play — built with EN & বাংলা support!',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: () async {
+                  await cardController.capturePng(pixelRatio: 2.0);
+                  final caption = ShareCardCaption.score(
+                    appName: AppConfig.appName,
+                    scoreText: '5★',
+                    playStoreUrl: playUrl,
+                    bangla: bn,
+                  );
+                  await Clipboard.setData(ClipboardData(text: caption));
+                  if (sheetContext.mounted) {
+                    ScaffoldMessenger.of(sheetContext).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          bn
+                              ? 'শেয়ার ক্যাপশন কপি হয়েছে!'
+                              : 'Share caption copied to clipboard!',
+                        ),
+                      ),
+                    );
+                    Navigator.of(sheetContext).pop();
+                  }
+                },
+                icon: const Icon(Icons.share_rounded, size: 18),
+                label: Text(bn ? 'ক্যাপশন কপি করুন' : 'Copy Share Caption'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: Listenable.merge(
-        <Listenable>[widget.preferences, widget.pulseController],
-      ),
+      listenable: Listenable.merge(<Listenable>[
+        widget.preferences,
+        widget.pulseController,
+      ]),
       builder: (BuildContext context, Widget? _) {
         final bn = widget.preferences.isBangla;
         final theme = Theme.of(context);
         final colors = theme.colorScheme;
+        final rawVer =
+            'v${widget.pulseController.currentVersion} (build ${widget.pulseController.currentBuildNumber ?? '-'})';
+        final displayVer = bn ? BanglaDigits.toBangla(rawVer) : rawVer;
 
         return Scaffold(
-          appBar: AppBar(
-            title: Text(bn ? 'সেটিংস' : 'Settings'),
-          ),
+          appBar: AppBar(title: Text(bn ? 'সেটিংস' : 'Settings')),
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: <Widget>[
@@ -107,6 +240,90 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onChanged: (bool value) {
                     unawaited(widget.preferences.setBangla(value));
                   },
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                bn ? 'ডেটা ও টুলস' : 'Data & Tools',
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: colors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                elevation: 0,
+                color: colors.surfaceContainerLow,
+                child: Column(
+                  children: <Widget>[
+                    ListTile(
+                      leading: const Icon(Icons.backup_outlined),
+                      title: Text(
+                        bn ? 'ব্যাকআপ ও রিস্টোর' : 'Backup & Restore',
+                      ),
+                      subtitle: Text(
+                        bn
+                            ? 'পাসওয়ার্ডসহ অফলাইন JSON ব্যাকআপ'
+                            : 'Encrypted offline JSON backup & restore',
+                      ),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () => unawaited(_openVaultSheet(context, bn)),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.ios_share_rounded),
+                      title: Text(bn ? 'অ্যাপ শেয়ার কার্ড' : 'Share App Card'),
+                      subtitle: Text(
+                        bn
+                            ? 'বন্ধুদের সাথে ব্র্যান্ডেড কার্ড শেয়ার করুন'
+                            : 'Preview branded status card & copy caption',
+                      ),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () => unawaited(_openShareCardSheet(context, bn)),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.auto_stories_outlined),
+                      title: Text(bn ? 'অ্যাপ পরিচিতি' : 'App Tour'),
+                      subtitle: Text(
+                        bn
+                            ? 'শুরুর গাইড আবার দেখুন'
+                            : 'Replay the welcome walkthrough',
+                      ),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () {
+                        unawaited(
+                          Navigator.of(context).push<void>(
+                            MaterialPageRoute<void>(
+                              builder: (BuildContext routeCtx) =>
+                                  SmartOnboardingFlow(
+                                controller: widget.onboardingController,
+                                initialBangla: bn,
+                                slides: kStarterOnboardingSlides,
+                                onCompleted: (bool choseBangla) {
+                                  unawaited(
+                                    widget.preferences.setBangla(
+                                      choseBangla,
+                                    ),
+                                  );
+                                  Navigator.of(routeCtx).pop();
+                                },
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    if (widget.diagnosticsController != null) ...<Widget>[
+                      const Divider(height: 1),
+                      DiagnosticsSettingsTile(
+                        controller: widget.diagnosticsController!,
+                        strings: bn
+                            ? const DiagnosticsStrings.bn()
+                            : const DiagnosticsStrings.en(),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               const SizedBox(height: 20),
@@ -183,10 +400,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ListTile(
                       leading: const Icon(Icons.info_outline_rounded),
                       title: const Text(AppConfig.appName),
-                      subtitle: Text(
-                        'v${widget.pulseController.currentVersion} '
-                        '(build ${widget.pulseController.currentBuildNumber ?? '-'})',
-                      ),
+                      subtitle: Text(displayVer),
                       onTap: _handleVersionTap,
                     ),
                   ],

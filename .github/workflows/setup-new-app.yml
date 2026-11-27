@@ -44,11 +44,23 @@ on:
         required: false
         type: string
         default: "support@example.com"
-      include_ai_pack:
-        description: Also add admin_api_key_manager (for AI / Gemini / OpenRouter apps)?
+      app_preset:
+        description: Companion kit bundle preset (core 7 kits are always pre-wired)
+        required: true
+        type: choice
+        options:
+          - standard
+          - finance_vault
+          - scanner_ai
+          - quiz_learning
+          - monetized_pro
+          - all_kits
+        default: standard
+      extra_kits:
+        description: "Extra comma-separated kits: ads,notify,ocr,ai,lock,pdf,streaks,paywall,voice (or all)"
         required: false
-        type: boolean
-        default: false
+        type: string
+        default: ""
       cleanup_setup_files:
         description: Remove this setup workflow & script after configuring?
         required: false
@@ -79,7 +91,8 @@ jobs:
           DEFAULT_LANG: ${{ inputs.default_language }}
           BRAND_COLOR: ${{ inputs.brand_color }}
           SUPPORT_EMAIL: ${{ inputs.support_email }}
-          AI_PACK: ${{ inputs.include_ai_pack }}
+          APP_PRESET: ${{ inputs.app_preset }}
+          EXTRA_KITS: ${{ inputs.extra_kits }}
           CLEANUP: ${{ inputs.cleanup_setup_files }}
         run: |
           ARGS=(
@@ -88,13 +101,14 @@ jobs:
             --lang "$DEFAULT_LANG"
             --color "$BRAND_COLOR"
             --email "${SUPPORT_EMAIL:-support@example.com}"
+            --preset "${APP_PRESET:-standard}"
             --repo "$GITHUB_REPOSITORY"
           )
           if [ -n "$APP_DESC" ]; then
             ARGS+=(--description "$APP_DESC")
           fi
-          if [ "$AI_PACK" = "true" ]; then
-            ARGS+=(--with-ai-pack)
+          if [ -n "$EXTRA_KITS" ]; then
+            ARGS+=(--kits "$EXTRA_KITS")
           fi
           if [ "$CLEANUP" = "true" ]; then
             ARGS+=(--cleanup)

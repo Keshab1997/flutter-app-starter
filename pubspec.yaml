@@ -13,10 +13,25 @@ dependencies:
   app_pulse_kit:
     git:
       url: https://github.com/Keshab1997/app_pulse_kit.git
+  bangla_kit:
+    git:
+      url: https://github.com/Keshab1997/bangla_kit.git
+  local_vault_backup:
+    git:
+      url: https://github.com/Keshab1997/local_vault_backup.git
   shared_preferences: ^2.2.2
+  smart_crash_diagnostics_kit:
+    git:
+      url: https://github.com/Keshab1997/smart_crash_diagnostics_kit.git
+  smart_onboarding_kit:
+    git:
+      url: https://github.com/Keshab1997/smart_onboarding_kit.git
   smart_review_feedback:
     git:
       url: https://github.com/Keshab1997/smart_review_feedback.git
+  smart_share_card:
+    git:
+      url: https://github.com/Keshab1997/smart_share_card.git
 
 dev_dependencies:
   flutter_test:

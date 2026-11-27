@@ -10,10 +10,7 @@ void installGlobalErrorWidget() {
 }
 
 class AppErrorView extends StatelessWidget {
-  const AppErrorView({
-    super.key,
-    required this.details,
-  });
+  const AppErrorView({super.key, required this.details});
 
   final FlutterErrorDetails details;
 
