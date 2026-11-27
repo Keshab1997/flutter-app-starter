@@ -13,6 +13,7 @@ dependencies:
   app_pulse_kit:
     git:
       url: https://github.com/Keshab1997/app_pulse_kit.git
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:

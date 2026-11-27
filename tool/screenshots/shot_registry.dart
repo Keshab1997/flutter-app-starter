@@ -1,6 +1,8 @@
 import 'package:app_pulse_kit/app_pulse_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_starter/screens/home_screen.dart';
+import 'package:flutter_app_starter/screens/settings_screen.dart';
+import 'package:flutter_app_starter/services/app_preferences.dart';
 import 'package:flutter_app_starter/theme/app_theme.dart';
 
 import 'shot_framework.dart';
@@ -14,6 +16,11 @@ final AppPulseController _shotPulse = AppPulseController(
   storage: InMemoryPulseStorage(),
   appVersion: '1.0.0',
   buildNumber: 1,
+);
+
+final AppPreferences _shotPrefs = AppPreferences.inMemory(
+  themeMode: ThemeMode.light,
+  isBangla: false,
 );
 
 final ShotEnv env = ShotEnv(
@@ -32,10 +39,14 @@ final List<Shot> shots = <Shot>[
     name: 'home',
     build: () => HomeScreen(
       pulseController: _shotPulse,
-      isDark: false,
-      isBangla: false,
-      onToggleTheme: () {},
-      onToggleLanguage: () {},
+      preferences: _shotPrefs,
+    ),
+  ),
+  Shot(
+    name: 'settings',
+    build: () => SettingsScreen(
+      pulseController: _shotPulse,
+      preferences: _shotPrefs,
     ),
   ),
 ];

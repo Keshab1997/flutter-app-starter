@@ -5,30 +5,29 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../app_config.dart';
+import '../services/app_preferences.dart';
+import 'settings_screen.dart';
 
 /// Clean starter home screen wired with `app_pulse_kit` notice banners,
-/// feature flags, Light/Dark theme switch, EN/বাংলা switch, and QA inspector.
+/// feature flags, persistent Theme/EN-বাংলা switch, Settings navigation, and
+/// debug QA inspector.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
     super.key,
     required this.pulseController,
-    required this.isDark,
-    required this.isBangla,
-    required this.onToggleTheme,
-    required this.onToggleLanguage,
+    required this.preferences,
   });
 
   final AppPulseController pulseController;
-  final bool isDark;
-  final bool isBangla;
-  final VoidCallback onToggleTheme;
-  final VoidCallback onToggleLanguage;
+  final AppPreferences preferences;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final strings = isBangla ? const PulseStrings.bn() : const PulseStrings.en();
+    final isBangla = preferences.isBangla;
+    final strings =
+        isBangla ? const PulseStrings.bn() : const PulseStrings.en();
 
     return Scaffold(
       appBar: AppBar(
@@ -36,17 +35,12 @@ class HomeScreen extends StatelessWidget {
         actions: <Widget>[
           IconButton(
             tooltip: isBangla ? 'Switch to English' : 'বাংলায় দেখুন',
-            onPressed: onToggleLanguage,
+            onPressed: () {
+              unawaited(preferences.toggleBangla());
+            },
             icon: Text(
               isBangla ? 'EN' : 'বাং',
               style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ),
-          IconButton(
-            tooltip: isDark ? 'Light mode' : 'Dark mode',
-            onPressed: onToggleTheme,
-            icon: Icon(
-              isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
             ),
           ),
           if (kDebugMode)
@@ -59,6 +53,22 @@ class HomeScreen extends StatelessWidget {
               },
               icon: const Icon(Icons.monitor_heart_rounded),
             ),
+          IconButton(
+            tooltip: isBangla ? 'সেটিংস' : 'Settings',
+            onPressed: () {
+              unawaited(
+                Navigator.of(context).push<void>(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext _) => SettingsScreen(
+                      pulseController: pulseController,
+                      preferences: preferences,
+                    ),
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.settings_rounded),
+          ),
         ],
       ),
       body: ListView(
@@ -102,8 +112,8 @@ class HomeScreen extends StatelessWidget {
                           const SizedBox(height: 6),
                           Text(
                             isBangla
-                                ? 'Material 3, রিমোট আপডেট, নোটিশ ব্যানার ও ফিচার ফ্ল্যাগ আগে থেকেই সেট করা আছে।'
-                                : 'Material 3, remote updates, notice banners, and feature flags are pre-wired.',
+                                ? 'Material 3, রিমোট আপডেট, নোটিশ ব্যানার, সেটিংস ও ফিচার ফ্ল্যাগ আগে থেকেই সেট করা আছে।'
+                                : 'Material 3, remote updates, notice banners, persistent settings, and feature flags are pre-wired.',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: colors.onSurfaceVariant,
                               height: 1.45,

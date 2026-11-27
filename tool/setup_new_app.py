@@ -2,26 +2,31 @@
 """1-click initializer for apps created from `Keshab1997/flutter-app-starter`.
 
 Renames the Flutter package, Android applicationId/namespace/MainActivity,
-Web manifest/title, `AppConfig`, `pulse.json`, `AGENTS.md`, and `README.md`
-in one clean pass.
+Web manifest/title, `AppConfig` (brand color, pulse URL, privacy policy URL),
+`pulse.json`, `PRIVACY_POLICY.md`, `AGENTS.md`, `README.md`, and generates
+brand-colored Android & Web launcher icons using stdlib Python only.
 
 Usage:
     python3 tool/setup_new_app.py \
       --name "Khoroch Pro" \
       --pkg com.keshab.khorochpro \
       --repo Keshab1997/khoroch-pro \
-      --lang bn
+      --lang bn \
+      --color "#0F766E"
 
 Stdlib only, Python >= 3.8.
 """
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import os
 import re
 import shutil
+import struct
 import sys
+import zlib
 from pathlib import Path
 
 OLD_DART_PKG = "flutter_app_starter"
@@ -31,10 +36,32 @@ OLD_REPO = "Keshab1997/flutter-app-starter"
 
 PKG_ID_RE = re.compile(r"^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$")
 DART_PKG_RE = re.compile(r"^[a-z][a-z0-9_]*$")
+HEX_COLOR_RE = re.compile(r"^#?([0-9A-Fa-f]{6})$")
+
+COLOR_PRESETS: dict[str, str] = {
+    "indigo": "#3F51B5",
+    "teal": "#0F766E",
+    "emerald": "#15803D",
+    "amber": "#B45309",
+    "rose": "#BE123C",
+    "violet": "#7C3AED",
+    "slate": "#334155",
+}
+
+
+def resolve_hex_color(raw: str) -> str:
+    key = raw.strip().lower()
+    if key in COLOR_PRESETS:
+        return COLOR_PRESETS[key]
+    m = HEX_COLOR_RE.match(raw.strip())
+    if not m:
+        raise ValueError(
+            f"Invalid --color {raw!r} (expected preset {sorted(COLOR_PRESETS)} or #RRGGBB)"
+        )
+    return f"#{m.group(1).upper()}"
 
 
 def slugify_dart_pkg(app_name: str, package_id: str) -> str:
-    """Derive a valid Dart package name from the package ID tail or app name."""
     tail = package_id.rsplit(".", 1)[-1]
     candidate = re.sub(r"[^a-z0-9_]+", "_", tail.lower()).strip("_")
     if candidate and DART_PKG_RE.match(candidate):
@@ -58,6 +85,95 @@ def replace_in_file(path: Path, replacements: list[tuple[str, str]]) -> bool:
     return True
 
 
+def _png_chunk(chunk_type: bytes, data: bytes) -> bytes:
+    crc = zlib.crc32(chunk_type + data) & 0xFFFFFFFF
+    return struct.pack(">I", len(data)) + chunk_type + data + struct.pack(">I", crc)
+
+
+def render_brand_icon_png(size: int, hex_color: str, *, maskable: bool = False) -> bytes:
+    """Render a crisp rounded-square gradient app icon with a geometric inner
+    badge using pure Python stdlib (no Pillow required)."""
+    hex_digits = hex_color.lstrip("#")
+    r0 = int(hex_digits[0:2], 16)
+    g0 = int(hex_digits[2:4], 16)
+    b0 = int(hex_digits[4:6], 16)
+
+    # Lighter highlight at top-left, richer deeper tone at bottom-right.
+    r_hi = min(255, int(r0 * 1.18 + 20))
+    g_hi = min(255, int(g0 * 1.18 + 20))
+    b_hi = min(255, int(b0 * 1.18 + 20))
+    r_lo = max(0, int(r0 * 0.72))
+    g_lo = max(0, int(g0 * 0.72))
+    b_lo = max(0, int(b0 * 0.72))
+
+    margin = 0.0 if maskable else size * 0.05
+    radius = 0.0 if maskable else size * 0.22
+    cx = (size - 1) / 2.0
+    cy = (size - 1) / 2.0
+    outer_r = size * 0.26
+    inner_r = size * 0.13
+    ring_w = max(1.5, size * 0.055)
+
+    rows = bytearray()
+    for y in range(size):
+        rows.append(0)  # PNG filter type 0
+        yf = float(y)
+        for x in range(size):
+            xf = float(x)
+            # Rounded-rect mask
+            if not maskable:
+                dx = max(margin + radius - xf, 0.0, xf - (size - 1 - margin - radius))
+                dy = max(margin + radius - yf, 0.0, yf - (size - 1 - margin - radius))
+                if dx > 0.0 or dy > 0.0:
+                    dist = (dx * dx + dy * dy) ** 0.5
+                    if dist > radius:
+                        rows.extend((0, 0, 0, 0))
+                        continue
+
+            t = (xf + yf) / max(1.0, 2.0 * (size - 1))
+            r = int(r_hi + (r_lo - r_hi) * t)
+            g = int(g_hi + (g_lo - g_hi) * t)
+            b = int(b_hi + (b_lo - b_hi) * t)
+
+            # Subtle clean white geometric pulse emblem (ring + center dot)
+            dd = ((xf - cx) ** 2 + (yf - cy) ** 2) ** 0.5
+            if abs(dd - outer_r) <= ring_w / 2.0 or dd <= inner_r:
+                # Blend crisp white emblem over gradient
+                r = int(r * 0.08 + 255 * 0.92)
+                g = int(g * 0.08 + 255 * 0.92)
+                b = int(b * 0.08 + 255 * 0.92)
+
+            rows.extend((r, g, b, 255))
+
+    ihdr = struct.pack(">IIBBBBB", size, size, 8, 6, 0, 0, 0)
+    compressed = zlib.compress(bytes(rows), level=6)
+    return (
+        b"\x89PNG\r\n\x1a\n"
+        + _png_chunk(b"IHDR", ihdr)
+        + _png_chunk(b"IDAT", compressed)
+        + _png_chunk(b"IEND", b"")
+    )
+
+
+def generate_icons(root: Path, hex_color: str) -> None:
+    """Replace default Flutter launcher & web icons with brand-colored icons."""
+    targets: list[tuple[Path, int, bool]] = [
+        (root / "android/app/src/main/res/mipmap-mdpi/ic_launcher.png", 48, False),
+        (root / "android/app/src/main/res/mipmap-hdpi/ic_launcher.png", 72, False),
+        (root / "android/app/src/main/res/mipmap-xhdpi/ic_launcher.png", 96, False),
+        (root / "android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png", 144, False),
+        (root / "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png", 192, False),
+        (root / "web/favicon.png", 32, False),
+        (root / "web/icons/Icon-192.png", 192, False),
+        (root / "web/icons/Icon-512.png", 512, False),
+        (root / "web/icons/Icon-maskable-192.png", 192, True),
+        (root / "web/icons/Icon-maskable-512.png", 512, True),
+    ]
+    for path, size, maskable in targets:
+        if path.parent.is_dir():
+            path.write_bytes(render_brand_icon_png(size, hex_color, maskable=maskable))
+
+
 def move_main_activity(root: Path, new_pkg: str) -> None:
     kotlin_root = root / "android" / "app" / "src" / "main" / "kotlin"
     old_file = kotlin_root / Path(*OLD_ANDROID_PKG.split(".")) / "MainActivity.kt"
@@ -74,7 +190,6 @@ def move_main_activity(root: Path, new_pkg: str) -> None:
 
     if old_file.resolve() != new_file.resolve():
         old_file.unlink()
-        # Prune now-empty old package directories cleanly.
         parent = old_file.parent
         while parent != kotlin_root and parent.exists():
             try:
@@ -82,6 +197,28 @@ def move_main_activity(root: Path, new_pkg: str) -> None:
             except OSError:
                 break
             parent = parent.parent
+
+
+def write_privacy_policy(root: Path, app_name: str, package_id: str, repo: str) -> None:
+    today = datetime.date.today().isoformat()
+    content = f"""# Privacy Policy — {app_name}
+
+**Last updated:** {today}
+
+**{app_name}** (`{package_id}`) respects your privacy.
+
+## Data We Collect
+- By default, this app operates offline-first and stores user preferences (such as theme and language selection) locally on your device.
+- The app fetches a read-only remote configuration file (`pulse.json`) solely to check for app updates, maintenance notices, and feature availability. No personal data is transmitted during this check.
+
+## Third-Party Services
+- If optional services (such as Google Play Services, Firebase, or analytics/ads) are enabled in future releases, this policy will be updated accordingly.
+
+## Contact
+If you have any questions about this Privacy Policy, please contact the developer via the project repository:
+https://github.com/{repo}
+"""
+    (root / "PRIVACY_POLICY.md").write_text(content, encoding="utf-8")
 
 
 def write_starter_readme(
@@ -106,7 +243,7 @@ flutter analyze --fatal-infos
 flutter test
 
 # Local screenshots (offline, ~1s/screen)
-python3 tool/local_screenshots.py --shot home
+python3 tool/local_screenshots.py --shot home,settings
 ```
 
 ## Remote config (`app_pulse_kit`)
@@ -118,6 +255,7 @@ Edit [`pulse.json`](pulse.json) at the repo root to manage:
 - Remote feature flags (`flags`)
 
 - **Android package:** `{package_id}`
+- **Privacy Policy:** [`PRIVACY_POLICY.md`](PRIVACY_POLICY.md)
 - **Repository:** `https://github.com/{repo}`
 """
     (root / "README.md").write_text(content, encoding="utf-8")
@@ -133,9 +271,19 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument(
         "--repo",
         default=os.environ.get("GITHUB_REPOSITORY", ""),
-        help="GitHub repo slug (owner/repo) for pulse.json URL",
+        help="GitHub repo slug (owner/repo) for pulse.json & Privacy Policy URLs",
     )
     ap.add_argument("--lang", choices=["en", "bn"], default="en", help="Default UI language")
+    ap.add_argument(
+        "--color",
+        default="indigo",
+        help=f"Brand seed color preset ({', '.join(sorted(COLOR_PRESETS))}) or #RRGGBB",
+    )
+    ap.add_argument(
+        "--with-ai-pack",
+        action="store_true",
+        help="Also add Keshab1997/admin_api_key_manager to pubspec.yaml",
+    )
     ap.add_argument("--cleanup", action="store_true", help="Remove setup script & workflow after running")
     ap.add_argument(
         "--allow-template-repo",
@@ -166,6 +314,12 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
+    try:
+        hex_color = resolve_hex_color(args.color)
+    except ValueError as exc:
+        print(f"setup_new_app: ERROR: {exc}", file=sys.stderr)
+        return 2
+
     dart_pkg = args.dart_name.strip().lower() if args.dart_name else slugify_dart_pkg(app_name, package_id)
     if not DART_PKG_RE.match(dart_pkg):
         print(f"setup_new_app: ERROR: invalid --dart-name {dart_pkg!r}", file=sys.stderr)
@@ -173,7 +327,9 @@ def main(argv: list[str] | None = None) -> int:
 
     description = (args.description or f"{app_name} — Flutter app.").strip()
     pulse_url = f"https://raw.githubusercontent.com/{repo}/main/pulse.json"
+    privacy_url = f"https://github.com/{repo}/blob/main/PRIVACY_POLICY.md"
     play_url = f"https://play.google.com/store/apps/details?id={package_id}"
+    dart_color = f"0xFF{hex_color.lstrip('#')}"
 
     # 1. pubspec.yaml
     pubspec = root / "pubspec.yaml"
@@ -181,6 +337,17 @@ def main(argv: list[str] | None = None) -> int:
         txt = pubspec.read_text(encoding="utf-8")
         txt = re.sub(r"^name:\s*.*$", f"name: {dart_pkg}", txt, count=1, flags=re.M)
         txt = re.sub(r"^description:\s*.*$", f"description: {description}", txt, count=1, flags=re.M)
+        if args.with_ai_pack and "admin_api_key_manager:" not in txt:
+            ai_dep = (
+                "  admin_api_key_manager:\n"
+                "    git:\n"
+                "      url: https://github.com/Keshab1997/admin_api_key_manager.git\n"
+            )
+            txt = txt.replace(
+                "  shared_preferences: ^2.2.2\n",
+                f"  shared_preferences: ^2.2.2\n{ai_dep}",
+                1,
+            )
         pubspec.write_text(txt, encoding="utf-8")
 
     # 2. Dart package imports across lib/, test/, tool/screenshots/
@@ -199,13 +366,19 @@ def main(argv: list[str] | None = None) -> int:
     if app_config.is_file():
         escaped_name = app_name.replace("\\", "\\\\").replace("'", "\\'")
         app_config.write_text(
-            f"""/// Central app identity & remote config metadata.
+            f"""import 'package:flutter/material.dart';
+
+/// Central app identity, branding, and remote config metadata.
 class AppConfig {{
   const AppConfig._();
 
   static const String appName = '{escaped_name}';
+  static const String packageId = '{package_id}';
+  static const Color seedColor = Color({dart_color});
   static const String pulseConfigUrl =
       '{pulse_url}';
+  static const String privacyPolicyUrl =
+      '{privacy_url}';
   static const bool defaultBangla = {'true' if args.lang == 'bn' else 'false'};
 }}
 """,
@@ -241,10 +414,7 @@ class AppConfig {{
         root / "web" / "index.html",
         [
             (f"<title>{OLD_DART_PKG}</title>", f"<title>{app_name}</title>"),
-            (
-                f'content="{OLD_DART_PKG}"',
-                f'content="{app_name}"',
-            ),
+            (f'content="{OLD_DART_PKG}"', f'content="{app_name}"'),
             (
                 "1-click Flutter starter template with app_pulse_kit, Material 3, EN/BN UI, and flutter-builder CI.",
                 description,
@@ -257,37 +427,41 @@ class AppConfig {{
         mdata["name"] = app_name
         mdata["short_name"] = app_name
         mdata["description"] = description
+        mdata["theme_color"] = hex_color
+        mdata["background_color"] = hex_color
         manifest.write_text(json.dumps(mdata, indent=4, ensure_ascii=False) + "\n", encoding="utf-8")
 
-    # 7. AGENTS.md & README.md
-    replace_in_file(
-        root / "AGENTS.md",
-        [(OLD_DART_PKG, app_name)],
-    )
+    # 7. Brand-colored Android + Web icons
+    generate_icons(root, hex_color)
+
+    # 8. Privacy Policy, AGENTS.md & README.md
+    write_privacy_policy(root, app_name, package_id, repo)
+    replace_in_file(root / "AGENTS.md", [(OLD_DART_PKG, app_name)])
     write_starter_readme(root, app_name, description, package_id, repo)
 
-    # 8. Remove template .iml if present
+    # 9. Remove template .iml if present
     old_iml = root / f"{OLD_DART_PKG}.iml"
     if old_iml.is_file():
         old_iml.unlink()
 
-    # 9. Optional cleanup of one-time setup files
+    # 10. Optional cleanup of one-time setup files
     if args.cleanup:
         for rel in (".github/workflows/setup-new-app.yml", "tool/setup_new_app.py"):
             target = root / rel
             if target.is_file():
                 target.unlink()
-        # Also remove pubspec.lock so next pub get resolves fresh under new package name
         lock = root / "pubspec.lock"
         if lock.is_file():
             lock.unlink()
 
-    # Clean empty .idea if flutter create left one
     idea_dir = root / ".idea"
     if idea_dir.is_dir():
         shutil.rmtree(idea_dir, ignore_errors=True)
 
-    print(f"setup_new_app: configured '{app_name}' (dart={dart_pkg}, android={package_id}, lang={args.lang})")
+    print(
+        f"setup_new_app: configured '{app_name}' "
+        f"(dart={dart_pkg}, android={package_id}, lang={args.lang}, color={hex_color}, ai_pack={args.with_ai_pack})"
+    )
     return 0
 
 

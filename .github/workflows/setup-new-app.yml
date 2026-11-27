@@ -26,6 +26,24 @@ on:
           - en
           - bn
         default: en
+      brand_color:
+        description: Brand theme & launcher icon color
+        required: true
+        type: choice
+        options:
+          - indigo
+          - teal
+          - emerald
+          - amber
+          - rose
+          - violet
+          - slate
+        default: indigo
+      include_ai_pack:
+        description: Also add admin_api_key_manager (for AI / Gemini / OpenRouter apps)?
+        required: false
+        type: boolean
+        default: false
       cleanup_setup_files:
         description: Remove this setup workflow & script after configuring?
         required: false
@@ -54,11 +72,22 @@ jobs:
           PACKAGE_ID: ${{ inputs.package_id }}
           APP_DESC: ${{ inputs.description }}
           DEFAULT_LANG: ${{ inputs.default_language }}
+          BRAND_COLOR: ${{ inputs.brand_color }}
+          AI_PACK: ${{ inputs.include_ai_pack }}
           CLEANUP: ${{ inputs.cleanup_setup_files }}
         run: |
-          ARGS=(--name "$APP_NAME" --pkg "$PACKAGE_ID" --lang "$DEFAULT_LANG" --repo "$GITHUB_REPOSITORY")
+          ARGS=(
+            --name "$APP_NAME"
+            --pkg "$PACKAGE_ID"
+            --lang "$DEFAULT_LANG"
+            --color "$BRAND_COLOR"
+            --repo "$GITHUB_REPOSITORY"
+          )
           if [ -n "$APP_DESC" ]; then
             ARGS+=(--description "$APP_DESC")
+          fi
+          if [ "$AI_PACK" = "true" ]; then
+            ARGS+=(--with-ai-pack)
           fi
           if [ "$CLEANUP" = "true" ]; then
             ARGS+=(--cleanup)
