@@ -51,7 +51,7 @@ concurrency:
 
 jobs:
   widget-tests:
-    uses: Keshab1997/flutter-builder/.github/workflows/flutter-widget-tests.yml@v1.18.9
+    uses: Keshab1997/flutter-builder/.github/workflows/flutter-widget-tests.yml@v1.19.0
     with:
       working-directory: "."
       flutter-channel: ${{ inputs['flutter-channel'] || 'stable' }}
