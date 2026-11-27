@@ -133,9 +133,12 @@ class HomeScreen extends StatelessWidget {
                   elevation: 0,
                   color: colors.surfaceContainerLow,
                   child: ListTile(
-                    leading: Icon(Icons.verified_rounded, color: colors.primary),
+                    leading:
+                        Icon(Icons.verified_rounded, color: colors.primary),
                     title: Text(
-                      isBangla ? 'রিমোট কনফিগ স্ট্যাটাস' : 'Remote Config Status',
+                      isBangla
+                          ? 'রিমোট কনফিগ স্ট্যাটাস'
+                          : 'Remote Config Status',
                     ),
                     subtitle: ListenableBuilder(
                       listenable: pulseController,

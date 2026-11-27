@@ -128,7 +128,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: Text(bn ? 'আপডেট চেক করুন' : 'Check for updates'),
                       subtitle: Text(
                         widget.pulseController.updateStatus == UpdateStatus.none
-                            ? (bn ? 'আপনি লেটেস্ট ভার্সনে আছেন' : 'You are up to date')
+                            ? (bn
+                                ? 'আপনি লেটেস্ট ভার্সনে আছেন'
+                                : 'You are up to date')
                             : widget.pulseController.updateStatus.name,
                       ),
                       trailing: widget.pulseController.isLoading
