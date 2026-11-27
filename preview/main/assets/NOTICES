@@ -898,7 +898,12 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 --------------------------------------------------------------------------------
 app_pulse_kit
+bangla_kit
+local_vault_backup
+smart_crash_diagnostics_kit
+smart_onboarding_kit
 smart_review_feedback
+smart_share_card
 
 MIT License
 
