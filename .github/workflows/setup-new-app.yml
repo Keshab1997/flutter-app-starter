@@ -62,7 +62,7 @@ on:
           - all_kits
         default: standard
       extra_kits:
-        description: "Extra kits: state_views,form_inputs,search_filter,permissions,help_faq,ads,notify,ocr,ai,ai_chat,lock,pdf,upi,charts,quiz,image_prep,csv_wa,cloud_sync,supabase,firebase,game_hud,streaks,paywall,voice (or all)"
+        description: "Extra kits: updater,state_views,form_inputs,search_filter,permissions,help_faq,ads,notify,ocr,ai,ai_chat,lock,pdf,upi,charts,quiz,image_prep,csv_wa,cloud_sync,supabase,firebase,game_hud,streaks,paywall,voice (or all)"
         required: false
         type: string
         default: ""

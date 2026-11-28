@@ -162,6 +162,10 @@ OPTIONAL_KITS: dict[str, tuple[str, str]] = {
         "smart_help_faq_kit",
         "Searchable offline EN/বাংলা FAQ center, dismissible quick-tip banners & 1-tap support card",
     ),
+    "updater": (
+        "smart_app_updater_kit",
+        "Play Store Flexible In-App Update + GitHub Release/v* tag auto-updater & Update Center",
+    ),
 }
 
 KIT_ALIASES: dict[str, str] = {
@@ -216,11 +220,16 @@ KIT_ALIASES: dict[str, str] = {
     "smart_help_faq_kit": "help_faq",
     "faq": "help_faq",
     "help": "help_faq",
+    "smart_app_updater_kit": "updater",
+    "app_updater": "updater",
+    "in_app_update": "updater",
+    "github_updater": "updater",
 }
 
 APP_PRESETS: dict[str, list[str]] = {
     "standard": [],
     "universal_ux": [
+        "updater",
         "state_views",
         "form_inputs",
         "search_filter",
@@ -228,6 +237,7 @@ APP_PRESETS: dict[str, list[str]] = {
         "help_faq",
     ],
     "finance_vault": [
+        "updater",
         "lock",
         "pdf",
         "upi",
@@ -240,6 +250,7 @@ APP_PRESETS: dict[str, list[str]] = {
         "help_faq",
     ],
     "scanner_ai": [
+        "updater",
         "ai",
         "ai_chat",
         "ocr",
@@ -665,6 +676,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--with-search-filter", action="store_true", help="Add smart_search_filter_kit")
     ap.add_argument("--with-permissions", action="store_true", help="Add smart_permission_kit")
     ap.add_argument("--with-help-faq", action="store_true", help="Add smart_help_faq_kit")
+    ap.add_argument("--with-updater", action="store_true", help="Add smart_app_updater_kit")
     ap.add_argument("--with-all-kits", action="store_true", help="Add all optional Flutter kits")
     ap.add_argument("--cleanup", action="store_true", help="Remove setup script & workflow after running")
     ap.add_argument(
@@ -722,6 +734,7 @@ def main(argv: list[str] | None = None) -> int:
         "search_filter": args.with_search_filter,
         "permissions": args.with_permissions,
         "help_faq": args.with_help_faq,
+        "updater": args.with_updater,
     }
     for slug, active in flag_map.items():
         if active:

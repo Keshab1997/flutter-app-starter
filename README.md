@@ -15,17 +15,17 @@
    - **Brand Color:** `indigo` / `teal` / `emerald` / `amber` / `rose` / `violet` / `slate`
    - **App Preset (`app_preset`):**
      - `standard` *(default — 8 zero-plugin core kits pre-wired)*
-     - `universal_ux` *(+ `state_views`, `form_inputs`, `search_filter`, `permissions`, `help_faq`)*
-     - `finance_vault` *(+ `lock`, `pdf`, `upi`, `charts`, `csv_wa`, `notify`, `state_views`, `form_inputs`, `search_filter`, `help_faq`)*
-     - `scanner_ai` *(+ `ai`, `ai_chat`, `ocr`, `image_prep`, `pdf`, `permissions`, `state_views`, `search_filter`, `help_faq`)*
+     - `universal_ux` *(+ `updater`, `state_views`, `form_inputs`, `search_filter`, `permissions`, `help_faq`)*
+     - `finance_vault` *(+ `updater`, `lock`, `pdf`, `upi`, `charts`, `csv_wa`, `notify`, `state_views`, `form_inputs`, `search_filter`, `help_faq`)*
+     - `scanner_ai` *(+ `updater`, `ai`, `ai_chat`, `ocr`, `image_prep`, `pdf`, `permissions`, `state_views`, `search_filter`, `help_faq`)*
      - `quiz_learning` *(+ `quiz`, `streaks`, `voice`, `charts`, `notify`, `ads`, `state_views`, `search_filter`, `help_faq`)*
      - `ai_assistant` *(+ `ai`, `ai_chat`, `voice`, `ads`, `paywall`, `permissions`, `state_views`, `help_faq`)*
      - `arcade_game` *(+ `game_hud`, `streaks`, `ads`, `paywall`)*
      - `cloud_supabase` *(+ `cloud_sync`, `supabase`, `lock`, `notify`, `state_views`)*
      - `cloud_firebase` *(+ `cloud_sync`, `firebase`, `lock`, `notify`, `state_views`)*
      - `monetized_pro` *(+ `ads`, `paywall`, `notify`, `help_faq`)*
-     - `all_kits` *(adds all 32 kits in 1 click!)*
-   - **Extra Kits (`extra_kits`):** comma-separated mix-and-match: `state_views,form_inputs,search_filter,permissions,help_faq,ads,notify,ocr,ai,ai_chat,lock,pdf,upi,charts,quiz,image_prep,csv_wa,cloud_sync,supabase,firebase,game_hud,streaks,paywall,voice` (or `all`)
+     - `all_kits` *(adds all 33 kits in 1 click!)*
+   - **Extra Kits (`extra_kits`):** comma-separated mix-and-match: `updater,state_views,form_inputs,search_filter,permissions,help_faq,ads,notify,ocr,ai,ai_chat,lock,pdf,upi,charts,quiz,image_prep,csv_wa,cloud_sync,supabase,firebase,game_hud,streaks,paywall,voice` (or `all`)
 
 **Or run locally (CLI):**
 ```bash
@@ -85,6 +85,7 @@ python3 tool/setup_new_app.py \
 | `search_filter` | `--with-search-filter` | [`smart_search_filter_kit`](https://github.com/Keshab1997/smart_search_filter_kit) | Adds Bangla-safe debounced fuzzy search, persistent recent searches, date-range chips & sort bottom sheet |
 | `permissions` | `--with-permissions` | [`smart_permission_kit`](https://github.com/Keshab1997/smart_permission_kit) | Adds Play Store Prominent Disclosure rationale sheet, App Settings recovery flow & pluggable permission gateway |
 | `help_faq` | `--with-help-faq` | [`smart_help_faq_kit`](https://github.com/Keshab1997/smart_help_faq_kit) | Adds searchable offline EN/বাংলা FAQ center, dismissible quick-tip banners & 1-tap WhatsApp/email support card |
+| `updater` | `--with-updater` | [`smart_app_updater_kit`](https://github.com/Keshab1997/smart_app_updater_kit) | Adds Play Store Flexible In-App Update (`in_app_update` + Web stub) & GitHub Release/`v*` tag `.apk` auto-updater |
 
 ---
 
